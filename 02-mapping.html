@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>CABANA Workshop: Introduction to Next-generation Sequencing</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="PBI - Transcriptomica" href="http://bi.ira.cinvestav.mx:8282/"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="https://liz-fernandez.github.io/HiC-Langebio/" title="HiC Workshop">
+          <img alt="Logo Cinvestav-Royal" src="img/cinvestav_Royal.jpg" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">Introduction to Next-generation Sequencing</h1></a>
+          <h2 class="subtitle">Read alignment</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning Objectives</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Align sequencing data to a reference (genomes or transcriptomes)</li>
+<li>Understand how to interpret mass sequencing alignment data</li>
+<li>First approach to the SAM and BAM coordinate formats</li>
+</ul>
+</div>
+</section>
+<p>We will use the fastq files that we used in the previous practice, as well as the reference genome of our organism, <em>Saccharomyces pombe</em>:</p>
+<pre class="output"><code>$ cd /usr/local/data
+$ wget https://liz-fernandez.github.io/CABANA-NGS-Langebio/datasets/genome/Sp_genome.fa</code></pre>
+<h2 id="mapping-the-filtered-reads-to-the-genome">Mapping the filtered reads to the genome</h2>
+<p>Once we verify that the reads are in the correct format, we will align the reads and transcripts to the genome using Bowtie2 via TopHat.</p>
+<p>You can find the manual in the following<a href="https://ccb.jhu.edu/software/tophat/manual.shtml">link</a>.</p>
+<p>First we will generate a bowtie2 index for the genome:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">bowtie2-build</span> Sp_genome.fa Sp_genome </code></pre></div>
+<pre class="output"><code>Settings:
+  Output files: &quot;Sp_genome.*.bt2&quot;
+  Line rate: 6 (line is 64 bytes)
+  Lines per side: 1 (side is 64 bytes)
+  Offset rate: 4 (one in 16)
+  FTable chars: 10
+  Strings: unpacked
+  Max bucket size: default
+  Max bucket size, sqrt multiplier: default
+  Max bucket size, len divisor: 4
+  Difference-cover sample period: 1024
+  Endianness: little
+  Actual local endianness: little
+  Sanity checking: disabled
+  Assertions: disabled
+  Random seed: 0
+  Sizeofs: void*:8, int:4, long:8, size_t:8
+Input files DNA, FASTA:
+  Sp_genome.fa
+Building a SMALL index
+Reading reference sizes
+  Time reading reference sizes: 00:00:00
+Calculating joined length
+Writing header
+Reserving space for joined string
+Joining reference sequences
+  Time to join reference sequences: 00:00:00
+bmax according to bmaxDivN setting: 107781
+Using parameters --bmax 80836 --dcv 1024
+  Doing ahead-of-time memory usage test
+  Passed!  Constructing with these parameters: --bmax 80836 --dcv 1024
+Constructing suffix-array element generator
+Building DifferenceCoverSample
+  Building sPrime
+  Building sPrimeOrder
+  V-Sorting samples
+  V-Sorting samples time: 00:00:00
+  Allocating rank array
+  Ranking v-sort output
+  Ranking v-sort output time: 00:00:00
+  Invoking Larsson-Sadakane on ranks
+  Invoking Larsson-Sadakane on ranks time: 00:00:00
+  Sanity-checking and returning
+Building samples
+Reserving space for 12 sample suffixes
+Generating random suffixes
+QSorting 12 sample offsets, eliminating duplicates
+QSorting sample offsets, eliminating duplicates time: 00:00:00
+Multikey QSorting 12 samples
+  (Using difference cover)
+  Multikey QSorting samples time: 00:00:00
+Calculating bucket sizes
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Split 1, merged 7; iterating...
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Split 1, merged 1; iterating...
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Avg bucket size: 71853.5 (target: 80835)
+Converting suffix-array elements to index image
+Allocating ftab, absorbFtab
+Entering Ebwt loop
+Getting block 1 of 6
+  Reserving size (80836) for bucket 1
+  Calculating Z arrays for bucket 1
+  Entering block accumulator loop for bucket 1:
+  bucket 1: 10%
+  bucket 1: 20%
+  bucket 1: 30%
+  bucket 1: 40%
+  bucket 1: 50%
+  bucket 1: 60%
+  bucket 1: 70%
+  bucket 1: 80%
+  bucket 1: 90%
+  bucket 1: 100%
+  Sorting block of length 79345 for bucket 1
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 79346 for bucket 1
+Getting block 2 of 6
+  Reserving size (80836) for bucket 2
+  Calculating Z arrays for bucket 2
+  Entering block accumulator loop for bucket 2:
+  bucket 2: 10%
+  bucket 2: 20%
+  bucket 2: 30%
+  bucket 2: 40%
+  bucket 2: 50%
+  bucket 2: 60%
+  bucket 2: 70%
+  bucket 2: 80%
+  bucket 2: 90%
+  bucket 2: 100%
+  Sorting block of length 78903 for bucket 2
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 78904 for bucket 2
+Getting block 3 of 6
+  Reserving size (80836) for bucket 3
+  Calculating Z arrays for bucket 3
+  Entering block accumulator loop for bucket 3:
+  bucket 3: 10%
+  bucket 3: 20%
+  bucket 3: 30%
+  bucket 3: 40%
+  bucket 3: 50%
+  bucket 3: 60%
+  bucket 3: 70%
+  bucket 3: 80%
+  bucket 3: 90%
+  bucket 3: 100%
+  Sorting block of length 73828 for bucket 3
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 73829 for bucket 3
+Getting block 4 of 6
+  Reserving size (80836) for bucket 4
+  Calculating Z arrays for bucket 4
+  Entering block accumulator loop for bucket 4:
+  bucket 4: 10%
+  bucket 4: 20%
+  bucket 4: 30%
+  bucket 4: 40%
+  bucket 4: 50%
+  bucket 4: 60%
+  bucket 4: 70%
+  bucket 4: 80%
+  bucket 4: 90%
+  bucket 4: 100%
+  Sorting block of length 70864 for bucket 4
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 70865 for bucket 4
+Getting block 5 of 6
+  Reserving size (80836) for bucket 5
+  Calculating Z arrays for bucket 5
+  Entering block accumulator loop for bucket 5:
+  bucket 5: 10%
+  bucket 5: 20%
+  bucket 5: 30%
+  bucket 5: 40%
+  bucket 5: 50%
+  bucket 5: 60%
+  bucket 5: 70%
+  bucket 5: 80%
+  bucket 5: 90%
+  bucket 5: 100%
+  Sorting block of length 74487 for bucket 5
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 74488 for bucket 5
+Getting block 6 of 6
+  Reserving size (80836) for bucket 6
+  Calculating Z arrays for bucket 6
+  Entering block accumulator loop for bucket 6:
+  bucket 6: 10%
+  bucket 6: 20%
+  bucket 6: 30%
+  bucket 6: 40%
+  bucket 6: 50%
+  bucket 6: 60%
+  bucket 6: 70%
+  bucket 6: 80%
+  bucket 6: 90%
+  bucket 6: 100%
+  Sorting block of length 53694 for bucket 6
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 53695 for bucket 6
+Exited Ebwt loop
+fchr[A]: 0
+fchr[C]: 135086
+fchr[G]: 215577
+fchr[T]: 296650
+fchr[$]: 431126
+Exiting Ebwt::buildToDisk()
+Returning from initFromVector
+Wrote 4340604 bytes to primary EBWT file: Sp_genome.1.bt2
+Wrote 107788 bytes to secondary EBWT file: Sp_genome.2.bt2
+Re-opening _in1 and _in2 as input streams
+Returning from Ebwt constructor
+Headers:
+    len: 431126
+    bwtLen: 431127
+    sz: 107782
+    bwtSz: 107782
+    lineRate: 6
+    offRate: 4
+    offMask: 0xfffffff0
+    ftabChars: 10
+    eftabLen: 20
+    eftabSz: 80
+    ftabLen: 1048577
+    ftabSz: 4194308
+    offsLen: 26946
+    offsSz: 107784
+    lineSz: 64
+    sideSz: 64
+    sideBwtSz: 48
+    sideBwtLen: 192
+    numSides: 2246
+    numLines: 2246
+    ebwtTotLen: 143744
+    ebwtTotSz: 143744
+    color: 0
+    reverse: 0
+Total time for call to driver() for forward index: 00:00:00
+Reading reference sizes
+  Time reading reference sizes: 00:00:00
+Calculating joined length
+Writing header
+Reserving space for joined string
+Joining reference sequences
+  Time to join reference sequences: 00:00:00
+  Time to reverse reference sequence: 00:00:00
+bmax according to bmaxDivN setting: 107781
+Using parameters --bmax 80836 --dcv 1024
+  Doing ahead-of-time memory usage test
+  Passed!  Constructing with these parameters: --bmax 80836 --dcv 1024
+Constructing suffix-array element generator
+Building DifferenceCoverSample
+  Building sPrime
+  Building sPrimeOrder
+  V-Sorting samples
+  V-Sorting samples time: 00:00:00
+  Allocating rank array
+  Ranking v-sort output
+  Ranking v-sort output time: 00:00:00
+  Invoking Larsson-Sadakane on ranks
+  Invoking Larsson-Sadakane on ranks time: 00:00:00
+  Sanity-checking and returning
+Building samples
+Reserving space for 12 sample suffixes
+Generating random suffixes
+QSorting 12 sample offsets, eliminating duplicates
+QSorting sample offsets, eliminating duplicates time: 00:00:00
+Multikey QSorting 12 samples
+  (Using difference cover)
+  Multikey QSorting samples time: 00:00:00
+Calculating bucket sizes
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Split 1, merged 6; iterating...
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Split 1, merged 0; iterating...
+Splitting and merging
+  Splitting and merging time: 00:00:00
+Avg bucket size: 53889.9 (target: 80835)
+Converting suffix-array elements to index image
+Allocating ftab, absorbFtab
+Entering Ebwt loop
+Getting block 1 of 8
+  Reserving size (80836) for bucket 1
+  Calculating Z arrays for bucket 1
+  Entering block accumulator loop for bucket 1:
+  bucket 1: 10%
+  bucket 1: 20%
+  bucket 1: 30%
+  bucket 1: 40%
+  bucket 1: 50%
+  bucket 1: 60%
+  bucket 1: 70%
+  bucket 1: 80%
+  bucket 1: 90%
+  bucket 1: 100%
+  Sorting block of length 41923 for bucket 1
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 41924 for bucket 1
+Getting block 2 of 8
+  Reserving size (80836) for bucket 2
+  Calculating Z arrays for bucket 2
+  Entering block accumulator loop for bucket 2:
+  bucket 2: 10%
+  bucket 2: 20%
+  bucket 2: 30%
+  bucket 2: 40%
+  bucket 2: 50%
+  bucket 2: 60%
+  bucket 2: 70%
+  bucket 2: 80%
+  bucket 2: 90%
+  bucket 2: 100%
+  Sorting block of length 79784 for bucket 2
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 79785 for bucket 2
+Getting block 3 of 8
+  Reserving size (80836) for bucket 3
+  Calculating Z arrays for bucket 3
+  Entering block accumulator loop for bucket 3:
+  bucket 3: 10%
+  bucket 3: 20%
+  bucket 3: 30%
+  bucket 3: 40%
+  bucket 3: 50%
+  bucket 3: 60%
+  bucket 3: 70%
+  bucket 3: 80%
+  bucket 3: 90%
+  bucket 3: 100%
+  Sorting block of length 45293 for bucket 3
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 45294 for bucket 3
+Getting block 4 of 8
+  Reserving size (80836) for bucket 4
+  Calculating Z arrays for bucket 4
+  Entering block accumulator loop for bucket 4:
+  bucket 4: 10%
+  bucket 4: 20%
+  bucket 4: 30%
+  bucket 4: 40%
+  bucket 4: 50%
+  bucket 4: 60%
+  bucket 4: 70%
+  bucket 4: 80%
+  bucket 4: 90%
+  bucket 4: 100%
+  Sorting block of length 39705 for bucket 4
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 39706 for bucket 4
+Getting block 5 of 8
+  Reserving size (80836) for bucket 5
+  Calculating Z arrays for bucket 5
+  Entering block accumulator loop for bucket 5:
+  bucket 5: 10%
+  bucket 5: 20%
+  bucket 5: 30%
+  bucket 5: 40%
+  bucket 5: 50%
+  bucket 5: 60%
+  bucket 5: 70%
+  bucket 5: 80%
+  bucket 5: 90%
+  bucket 5: 100%
+  Sorting block of length 51531 for bucket 5
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 51532 for bucket 5
+Getting block 6 of 8
+  Reserving size (80836) for bucket 6
+  Calculating Z arrays for bucket 6
+  Entering block accumulator loop for bucket 6:
+  bucket 6: 10%
+  bucket 6: 20%
+  bucket 6: 30%
+  bucket 6: 40%
+  bucket 6: 50%
+  bucket 6: 60%
+  bucket 6: 70%
+  bucket 6: 80%
+  bucket 6: 90%
+  bucket 6: 100%
+  Sorting block of length 49697 for bucket 6
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 49698 for bucket 6
+Getting block 7 of 8
+  Reserving size (80836) for bucket 7
+  Calculating Z arrays for bucket 7
+  Entering block accumulator loop for bucket 7:
+  bucket 7: 10%
+  bucket 7: 20%
+  bucket 7: 30%
+  bucket 7: 40%
+  bucket 7: 50%
+  bucket 7: 60%
+  bucket 7: 70%
+  bucket 7: 80%
+  bucket 7: 90%
+  bucket 7: 100%
+  Sorting block of length 77916 for bucket 7
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 77917 for bucket 7
+Getting block 8 of 8
+  Reserving size (80836) for bucket 8
+  Calculating Z arrays for bucket 8
+  Entering block accumulator loop for bucket 8:
+  bucket 8: 10%
+  bucket 8: 20%
+  bucket 8: 30%
+  bucket 8: 40%
+  bucket 8: 50%
+  bucket 8: 60%
+  bucket 8: 70%
+  bucket 8: 80%
+  bucket 8: 90%
+  bucket 8: 100%
+  Sorting block of length 45270 for bucket 8
+  (Using difference cover)
+  Sorting block time: 00:00:00
+Returning block of 45271 for bucket 8
+Exited Ebwt loop
+fchr[A]: 0
+fchr[C]: 135086
+fchr[G]: 215577
+fchr[T]: 296650
+fchr[$]: 431126
+Exiting Ebwt::buildToDisk()
+Returning from initFromVector
+Wrote 4340604 bytes to primary EBWT file: Sp_genome.rev.1.bt2
+Wrote 107788 bytes to secondary EBWT file: Sp_genome.rev.2.bt2
+Re-opening _in1 and _in2 as input streams
+Returning from Ebwt constructor
+Headers:
+    len: 431126
+    bwtLen: 431127
+    sz: 107782
+    bwtSz: 107782
+    lineRate: 6
+    offRate: 4
+    offMask: 0xfffffff0
+    ftabChars: 10
+    eftabLen: 20
+    eftabSz: 80
+    ftabLen: 1048577
+    ftabSz: 4194308
+    offsLen: 26946
+    offsSz: 107784
+    lineSz: 64
+    sideSz: 64
+    sideBwtSz: 48
+    sideBwtLen: 192
+    numSides: 2246
+    numLines: 2246
+    ebwtTotLen: 143744
+    ebwtTotSz: 143744
+    color: 0
+    reverse: 1
+Total time for backward call to driver() for mirror index: 00:00:00</code></pre>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">ls</span> *bt2</code></pre></div>
+<pre class="output"><code>Sp_genome.1.bt2        
+Sp_genome.2.bt2              
+Sp_genome.3.bt2       
+Sp_genome.4.bt2           
+Sp_genome.rev.1.bt2          
+Sp_genome.rev.2.bt2</code></pre>
+<p>Usamos tophat2 para mapear las lecturas. Este programa nos permite dividir lecturas que atraviesan sitios de splicing:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">tophat2</span> -I 300 -i 20 Sp_genome \
+ Sp_log.left.fq.gz,Sp_hs.left.fq.gz,Sp_ds.left.fq.gz,Sp_plat.left.fq.gz \
+ Sp_log.right.fq.gz,Sp_hs.right.fq.gz,Sp_ds.right.fq.gz,Sp_plat.right.fq.gz</code></pre></div>
+<pre class="output"><code>[2017-01-24 13:53:23] Beginning TopHat run (v2.1.1)
+-----------------------------------------------
+[2017-01-24 13:53:23] Checking for Bowtie
+          Bowtie version:    2.2.8.0
+[2017-01-24 13:53:23] Checking for Bowtie index files (genome)..
+[2017-01-24 13:53:23] Checking for reference FASTA file
+[2017-01-24 13:53:23] Generating SAM header for Sp_genome
+[2017-01-24 13:53:23] Preparing reads
+     left reads: min. length=25, max. length=68, 329455 kept reads (431 discarded)
+    right reads: min. length=25, max. length=68, 329725 kept reads (161 discarded)
+[2017-01-24 13:53:31] Mapping left_kept_reads to genome Sp_genome with Bowtie2
+[2017-01-24 13:53:44] Mapping left_kept_reads_seg1 to genome Sp_genome with Bowtie2 (1/2)
+[2017-01-24 13:53:44] Mapping left_kept_reads_seg2 to genome Sp_genome with Bowtie2 (2/2)
+[2017-01-24 13:53:44] Mapping right_kept_reads to genome Sp_genome with Bowtie2
+[2017-01-24 13:53:57] Mapping right_kept_reads_seg1 to genome Sp_genome with Bowtie2 (1/2)
+[2017-01-24 13:53:57] Mapping right_kept_reads_seg2 to genome Sp_genome with Bowtie2 (2/2)
+[2017-01-24 13:53:57] Searching for junctions via segment mapping
+    Coverage-search algorithm is turned on, making this step very slow
+    Please try running TopHat again with the option (--no-coverage-search) if this step takes too much time or memory.
+[2017-01-24 13:54:02] Retrieving sequences for splices
+[2017-01-24 13:54:02] Indexing splices
+Building a SMALL index
+[2017-01-24 13:54:02] Mapping left_kept_reads_seg1 to genome segment_juncs with Bowtie2 (1/2)
+[2017-01-24 13:54:02] Mapping left_kept_reads_seg2 to genome segment_juncs with Bowtie2 (2/2)
+[2017-01-24 13:54:02] Joining segment hits
+[2017-01-24 13:54:03] Mapping right_kept_reads_seg1 to genome segment_juncs with Bowtie2 (1/2)
+[2017-01-24 13:54:03] Mapping right_kept_reads_seg2 to genome segment_juncs with Bowtie2 (2/2)
+[2017-01-24 13:54:03] Joining segment hits
+[2017-01-24 13:54:04] Reporting output tracks
+-----------------------------------------------
+[2017-01-24 13:54:30] A summary of the alignment counts can be found in ./tophat_out/align_summary.txt
+[2017-01-24 13:54:30] Run complete: 00:01:07 elapsed</code></pre>
+<p>We explore the result, which is a file in SAM format.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">samtools</span> view tophat_out/accepted_hits.bam <span class="kw">|</span> <span class="kw">head</span></code></pre></div>
+<h3 id="the-sam-format">The SAM format</h3>
+<p>Let’s see a smaller example of this format. Suppose we have the following alignment:</p>
+<pre class="output"><code>Coor    12345678901234 5678901234567890123456789012345
+ref AGCATGTTAGATAA**GATAGCTGTGCTAGTAGGCAGTCAGCGCCAT
++r001/1       TTAGATAAAGGATA*CTG
++r002        aaaAGATAA*GGATA
++r003      gcctaAGCTAA
++r004                    ATAGCT..............TCAGC
+-r003                           ttagctTAGGC
+-r001/2                                       CAGCGGCAT</code></pre>
+<p>The corresponding SAM format will be the following:</p>
+<pre class="output"><code>@HD VN:1.5  SO:coordinate
+@SQ SN:ref  LN:45
+r001    99  ref 7   30  8M2I4M1D3M  =   37  39  TTAGATAAAGGATACTG   *
+r002    0   ref 9   30  3S6M1P1I4M  *   0   0   AAAAGATAAGGATA  *
+r003    0   ref 9   30  5S6M    *   0   0   GCCTAAGCTAA *   SA:Z:ref,29,-,6H5M,17,0;
+r004    0   ref 16  30  6M14N5M *   0   0   ATAGCTTCAGC *
+r003    2064    ref 29  17  6H5M    *   0   0   TAGGC   *   SA:Z:ref,9,+,5S6M,30,1;
+r001    147 ref 37  30  9M  =   7   -39 CAGCGGCAT   *   NM:i:1</code></pre>
+<p>The SAM format is a plain text format that allows us to save sequencing data in ASCII format delimited by tabs.</p>
+<p>It is made up of two core sections:</p>
+<ul>
+<li>The headers</li>
+<li>The alignment</li>
+</ul>
+<p>The section of the <strong>header</strong> starts with the character <code>@</code> followed by one of the codes of two letters that denote the characteristics of the alignments in this file. Each line is delimited by tabs and, in addition to the lines that begin with <code>@CO</code>, each data field has the format<code>TAG:VALUE</code>, where <code>TAG</code> is a string Two characters that define the format and content of <code>VALUE</code>.</p>
+<p>The header is not indispensable but contains information about the version of the file as well as if it is ordered or not. Therefore it is advisable to include it.</p>
+<p>The <strong>alignment section</strong> contains the following information:</p>
+<ol style="list-style-type: decimal">
+<li><strong>QNAME</strong> Name of the reference, QNAME (SAM) / Name of the read (BAM). It is used to group alignments that are together, as in the case of alignments of paired end reads or a read that appears in multiple alignments.</li>
+<li><strong>FLAG</strong> Information set describing the alignment. Provides the following information:
+<ul>
+<li>Are there multiple fragments?</li>
+<li>Are all the fragments well aligned?</li>
+<li>Is this fragment aligned?</li>
+<li>Has the following fragment not been aligned?</li>
+<li>Is the reference the reverse string?</li>
+<li>Is the following fragment the reverse chain?</li>
+<li>Is this the first fragment?</li>
+<li>Is this the last fragment?</li>
+<li>Is this a secondary alignment?</li>
+<li>Did this reading fail quality filters?</li>
+<li>Is this reading a PCR or optical duplicate?</li>
+</ul></li>
+<li><strong>RNAME</strong> Name of the reference sequence.</li>
+<li><strong>POS</strong> Left alignment position (base 1).</li>
+<li><strong>MAP</strong> Alignment quality.</li>
+<li><strong>CIGAR</strong> CIGAR chain.</li>
+<li><strong>RNEXT</strong> Name of the paired end (mate) or the next read.</li>
+<li><strong>PNEXT</strong> Position of the pair (mate) or the next read.</li>
+<li><strong>TLEN</strong> Length of the alignment.</li>
+<li><strong>SEQ</strong> The test sequence of this alignment (in this case the sequence of the read).</li>
+<li><strong>QUAL</strong> The read quality.</li>
+<li><strong>TAGs</strong> Additional information.</li>
+</ol>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="cadenas-cigar"><span class="glyphicon glyphicon-pushpin"></span>Cadenas CIGAR</h2>
+</div>
+<div class="panel-body">
+<p>The sequence aligned to the reference may have additional bases that are not in the reference or the read may be missing bases that are in the reference. The CIGAR string is a string that encodes each base and the characteristics of each in alignment.</p>
+<p>For example, the string CIGAR:</p>
+<pre class="output"><code>CIGAR: 3M1I3M1D5M</code></pre>
+<p>indicates that the first 3 bases of the reading aligns with the reference (3M), the next base does not exist in the reference (1I), the following 3 bases align with the reference (3M), the next base does not exist in the reading (1D), and 5 more bases align with the reference (5M).</p>
+</div>
+</aside>
+<p>As you can see these files contain a lot of information that can be analyzed using scripts that show alignment statistics. Programs like <a href="http://broadinstitute.github.io/picard/">Picard</a> perform this type of analysis.</p>
+<p>The compressed version of the SAM files is known as BAM (binary sam). Let’s convert the BAM file to SAM using samtools:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">samtools</span> view tophat_out/accepted_hits.bam <span class="kw">&gt;</span> tophat_out/accepted_hits.sam</code></pre></div>
+<p>We do not open the SAM files because, since they are in binary format, they are illegible. However, we have to perform two last steps to visualize the results:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">samtools</span> sort tophat_out/accepted_hits.bam <span class="kw">&gt;</span> tophat_out/sorted_accepted_hits.bam
+$ <span class="kw">samtools</span> index tophat_out/sorted_accepted_hits.bam</code></pre></div>
+<p>The first step orders the results by their coordinates and the second one creates indexes to speed up the display using a browser.</p>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="task---aligning-the-filtered-readings-to-the-transcriptome"><span class="glyphicon glyphicon-pencil"></span>Task - Aligning the filtered readings to the transcriptome</h2>
+</div>
+<div class="panel-body">
+<p>We have aligned the readings to the genome but we also want to align them directly to the transcriptome. We are going to review the TopHat2 manual and use the options that allows us to map readings directly to transcriptomes.</p>
+<ul>
+<li><strong>Clue:</strong> You can not use the previously generated index.</li>
+</ul>
+<h3 id="solution">Solution</h3>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">bowtie2-build</span> ./trinity_out_dir/Trinity.fasta Trinity_assembly_Sp
+$ <span class="kw">tophat2</span> -I 300 -i 20 Trinity_assembly_Sp Sp_ds.left.fq.gz,Sp_hs.left.fq.gz,Sp_log.left.fq.gz,Sp_plat.left.fq.gz Sp_ds.right.fq.gz,Sp_hs.right.fq.gz,Sp_log.right.fq.gz,Sp_plat.right.fq.gz</code></pre></div>
+</div>
+</section>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="mailto:selene.fernandez.valverde@gmail.com">Contacto</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">Licencia</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>
