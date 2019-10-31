@@ -37,14 +37,14 @@ First, let's plot a square matrix. This might be useful to explore large regions
 
 
 ```bash
-hicPlotMatrix --matrix ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool --region 2:120000000-132000000 --outFileName full_matrix.png
+hicPlotMatrix --matrix ZmMC_HiC_1_1_2.hicup.mcool::/resolutions/100000 --region 2:120000000-132000000 --outFileName full_matrix.png
 ```
 
 Let's try the same plot, but on a log scale. 
 
 
 ```bash
-hicPlotMatrix --matrix ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool --region 2:120000000-132000000 --log1p --outFileName full_matrix_log.png
+hicPlotMatrix --matrix ZmMC_HiC_1_1_2.hicup.mcool::/resolutions/100000 --region 2:120000000-132000000 --log1p --outFileName full_matrix_log.png
 ```
 
 Now open both plots and compare.

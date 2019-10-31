@@ -22,7 +22,7 @@ First we generate a bowtie2 index for the genome.
 
 
 ```bash
-bowtie2-build --threads 8 Zea_mays.B73_RefGen_v4.dna.chromosome.2.fa.gz maize_chr2_bwt2
+bowtie2-build --threads 1 maize_mini2.fa maize_mini2
 ```
 
 Then we use HiCUP digester to generate an *in silico* digested genome file. 
@@ -31,14 +31,14 @@ Then we use HiCUP digester to generate an *in silico* digested genome file.
 
 
 ```bash
-hicup_digester --re1 ^GATC,DpnII --genome maize_chr2 Zea_mays.B73_RefGen_v4.dna.chromosome.2.fa.gz
+hicup_digester --re1 ^GATC,DpnII --genome maize_mini2 maize_mini2.fa
 ```
 
 Let's inspect the Digested file.
 
 
 ```bash
-head Digest_maize_chr2_DpnII_None_17-50-37_26-10-2019.txt
+head Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt
 ```
 
 ## HiCUP truncater 
@@ -70,7 +70,7 @@ Forward and reverse reads are mapped independently, and then the resulting align
 
 
 ```bash
-hicup_mapper --threads 8 --bowtie2 /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2 --index maize_chr2_bwt2 ZmMC_HiC_2.1.10_sub_1.trunc.fastq  ZmMC_HiC_2.1.10_sub_2.trunc.fastq
+hicup_mapper --threads 8 --bowtie2 /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2 --index maize_mini2 ZmMC_HiC_2.1.10_sub_1.trunc.fastq  ZmMC_HiC_2.1.10_sub_2.trunc.fastq
 ```
 
 We can inspect how many read pairs were correctly mapped in the hicup_mapper_summary file.
@@ -86,7 +86,7 @@ After mapping, the resulting SAM file is parsed to filter out uninformative read
 
 
 ```bash
-hicup_filter --digest Digest_maize_chr2_DpnII_None_17-50-37_26-10-2019.txt ZmMC_HiC_2.1.10_sub_1_2.pair.sam --longest 800 --shortest 150
+hicup_filter --digest Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt ZmMC_HiC_2.1.10_sub_1_2.pair.sam --longest 800 --shortest 150
 ```
 
 ## HiCUP deduplicater
@@ -134,10 +134,10 @@ Bowtie2: /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2
 
 #Path to the reference genome indices
 #Remember to include the basename of the genome indices
-Index: maize_chr2_bwt2
+Index: maize_mini2
 
 #Path to the genome digest file produced by hicup_digester
-Digest: Digest_maize_chr2_DpnII_None_17-50-37_26-10-2019.txt
+Digest: Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt
 
 #FASTQ format (valid formats: 'Sanger', 'Solexa_Illumina_1.0', 'Illumina_1.3' or 'Illumina_1.5')
 #If not specified, HiCUP will try to determine the format automatically by analysing
@@ -145,7 +145,7 @@ Digest: Digest_maize_chr2_DpnII_None_17-50-37_26-10-2019.txt
 Format: 
 
 #Maximum di-tag length (optional parameter)
-Longest: 700
+Longest: 800
 
 #Minimum di-tag length (optional parameter)
 Shortest: 100
