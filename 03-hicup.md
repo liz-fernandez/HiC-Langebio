@@ -47,7 +47,7 @@ The next step is to truncate the sequence downstream of a ligation site of the r
 
 
 ```bash
-hicup_truncater --re1 ^GATC,DpnII ZmMC_HiC_2.1.10_sub_1.fq.gz ZmMC_HiC_2.1.10_sub_2.fq.gz
+hicup_truncater --re1 ^GATC,DpnII ZmEn_HiC_sub_1.fq.gz  ZmEn_HiC_sub_2.fq.gz
 ```
 
 Let's inspect the truncation results.
@@ -70,7 +70,7 @@ Forward and reverse reads are mapped independently, and then the resulting align
 
 
 ```bash
-hicup_mapper --threads 8 --bowtie2 /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2 --index maize_mini2 ZmMC_HiC_2.1.10_sub_1.trunc.fastq  ZmMC_HiC_2.1.10_sub_2.trunc.fastq
+hicup_mapper --threads 1 --bowtie2 /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2 --index maize_mini2 ZmEn_HiC_sub_1.trunc.fastq ZmEn_HiC_sub_2.trunc.fastq
 ```
 
 We can inspect how many read pairs were correctly mapped in the hicup_mapper_summary file.
@@ -86,7 +86,7 @@ After mapping, the resulting SAM file is parsed to filter out uninformative read
 
 
 ```bash
-hicup_filter --digest Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt ZmMC_HiC_2.1.10_sub_1_2.pair.sam --longest 800 --shortest 150
+hicup_filter --digest Digest_maize_mini2_DpnII_None_02-07-29_01-11-2019.txt ZmEn_HiC_sub_1_2.pair.sam --longest 800 --shortest 150
 ```
 
 ## HiCUP deduplicater
@@ -95,7 +95,7 @@ The final step of the workflow is to remove read pair duplicates. Duplicates may
 
 
 ```bash
-hicup_deduplicator --zip ZmMC_HiC_2.1.10_sub_1_2.filt.sam
+hicup_deduplicator --zip ZmEn_HiC_sub_1_2.filt.sam
 ```
 
 ## Run whole HiCUP pipeline 
@@ -114,7 +114,7 @@ To do this we setup a configuration file:
 Outdir:
 
 #Number of threads to use
-Threads: 16
+Threads: 1
 
 #Suppress progress updates (0: off, 1: on)
 Quiet:0
@@ -151,8 +151,8 @@ Longest: 800
 Shortest: 100
 
 #FASTQ files to be analysed, placing paired files on adjacent lines
-ZmMC_HiC_2.1.10_sub_1.fq.gz
-ZmMC_HiC_2.1.10_sub_2.fq.gz
+ZmEn_HiC_sub_1.fq.gz
+ZmEn_HiC_sub_2.fq.gz
 ```
 
 
