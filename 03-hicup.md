@@ -130,14 +130,14 @@ Zip:1
 #Note: ensure you specify the correct aligner i.e. Bowtie when 
 #using Bowtie indices, or Bowtie2 when using Bowtie2 indices. 
 #In the example below Bowtie2 is specified.
-Bowtie2: /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2
+Bowtie2: /usr/local/src/bowtie2-2.3.5.1-linux-x86_64/bowtie2
 
 #Path to the reference genome indices
 #Remember to include the basename of the genome indices
 Index: maize_mini2
 
 #Path to the genome digest file produced by hicup_digester
-Digest: Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt
+Digest: Digest_maize_mini2_DpnII_None_02-07-29_01-11-2019.txt
 
 #FASTQ format (valid formats: 'Sanger', 'Solexa_Illumina_1.0', 'Illumina_1.3' or 'Illumina_1.5')
 #If not specified, HiCUP will try to determine the format automatically by analysing
