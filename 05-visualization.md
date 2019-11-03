@@ -34,17 +34,20 @@ Another visualization approach is to include a command in a script that automati
 We will use the HiCexplorer command line tools for this purpose.
 
 First, let's plot a square matrix. This might be useful to explore large regions. 
+Let's take a look at the whole chromosome.
 
 
 ```bash
-hicPlotMatrix --matrix ZmMC_HiC_1_1_2.hicup.mcool::/resolutions/100000 --region 2:120000000-132000000 --outFileName full_matrix.png
+hicPlotMatrix --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_corrected.png
+
 ```
 
-Let's try the same plot, but on a log scale. 
+Now let's try the same plot, but on a log scale. 
 
 
 ```bash
-hicPlotMatrix --matrix ZmMC_HiC_1_1_2.hicup.mcool::/resolutions/100000 --region 2:120000000-132000000 --log1p --outFileName full_matrix_log.png
+hicPlotMatrix --log1p --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_log.png 
+
 ```
 
 Now open both plots and compare.
@@ -55,27 +58,44 @@ open full_matrix_log.png
 open full_matrix.png
 ```
 
+We can also plot a smaller region.
+
+
+```bash
+hicPlotMatrix --log1p --region 2:125000000-130000000 --matrix ZmMC_50k_corrected.cool --outFileName ZmMC_50k_region_log.png
+```
+
+We can compare differences between our conditions by plotting a difference matrix. 
+
+```bash
+hicCompareMatrices --operation log2ratio --matrices ZmMC_500k_corrected.cool ZmEn_500k_corrected.cool --outFileName ZmMC_ZmEn_500k_log2.cool
+```
+
+
+```bash
+hicPlotMatrix --matrix ZmMC_ZmEn_500k_log2.cool --outFileName ZmMC_ZmEn_500k_log2.png
+```
+
+
 Another approach is to plot the upper triangle of the diagonal. This is particularly useful to plot the matrix alongside with other data tracks. 
 
 The hicPlotTADs function requires a track configuration file like the following one:
 
 
 ```bash
-[x-axis]
-where = top
-
 [hic matrix]
-file = ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool
+file = ZmMC_10k_corrected.cool
 title = Hi-C data
 transform = log1p
 file_type = hic_matrix
+depth = 300000
 
 ```
 
 
 
 ```bash
-hicPlotTADs --tracks hic_track.ini --region 2:120000000-132000000 -out horiz_mat.png
+hicPlotTADs --tracks hic_track.ini --region 2:127000000-128000000 -out ZmMC_10k_horiz_mat.png
 ```
 
 
