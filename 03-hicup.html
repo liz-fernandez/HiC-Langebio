@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>CABANA Workshop: HiC alignment strategies</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="PBI - Transcriptomica" href="http://bi.ira.cinvestav.mx:8282/"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="https://liz-fernandez.github.io/HiC-Langebio/" title="HiC Workshop">
+          <img alt="Logo Cinvestav-Royal" src="img/cinvestav_Royal.jpg" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <h1 class="title">HiC alignment strategies</h1>
+          <h2 id="learning-objectives">Learning objectives</h2>
+<ul>
+<li>Generate the genome index for mapping</li>
+<li>Generate a restriction fragment digested genome file</li>
+<li>Run HiCUP truncator to truncate the 3’ part of reads after the ligation motif</li>
+<li>Run HiCUP</li>
+</ul>
+<h2 id="setting-up-the-genome-files">Setting up the genome files</h2>
+<p>In order to run HiCUP to map and filter HiC reads, two files must be generated: the bowtie2 index, and the digested genome file.</p>
+<p>First we generate a bowtie2 index for the genome.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bowtie2-build</span> --threads 1 maize_mini2.fa maize_mini2</code></pre></div>
+<p>Then we use HiCUP digester to generate an <em>in silico</em> digested genome file. - –re1 is the restriction enzyme used in the procol. The restriction site, as well as the cut site (with ^) must be indicated. - –genome is the name of the genome for the output file (optional)</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup_digester</span> --re1 ^GATC,DpnII --genome maize_mini2 maize_mini2.fa</code></pre></div>
+<p>Let’s inspect the Digested file.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">head</span> Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt</code></pre></div>
+<h2 id="hicup-truncater">HiCUP truncater</h2>
+<p>The next step is to truncate the sequence downstream of a ligation site of the read.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup_truncater</span> --re1 ^GATC,DpnII ZmEn_HiC_sub_1.fq.gz  ZmEn_HiC_sub_2.fq.gz</code></pre></div>
+<p>Let’s inspect the truncation results.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">less</span> hicup_truncater_summary_wJYYjDJNrR_18-03-50_26-10-2019.txt</code></pre></div>
+<p>We expect a higher percentage of truncated reads with longer reads (~150 nts). Another factor is the distribution of restriction fragment lengths.</p>
+<p>After truncation, the average read length is ~80 which is still a reasonable read length.</p>
+<h2 id="hicup-mapper">HiCUP mapper</h2>
+<p>The next step is to map the read pairs to the reference genome.</p>
+<p>Forward and reverse reads are mapped independently, and then the resulting alignments are paired again to produce a paired end bam.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup_mapper</span> --threads 1 --bowtie2 /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2 --index maize_mini2 ZmEn_HiC_sub_1.trunc.fastq ZmEn_HiC_sub_2.trunc.fastq</code></pre></div>
+<p>We can inspect how many read pairs were correctly mapped in the hicup_mapper_summary file.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">head</span> hicup_mapper_summary_cKQMtNGDIb_18-27-31_26-10-2019.txt </code></pre></div>
+<h2 id="hicup-filter">HiCUP filter</h2>
+<p>After mapping, the resulting SAM file is parsed to filter out uninformative read pairs.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup_filter</span> --digest Digest_maize_mini2_DpnII_None_02-07-29_01-11-2019.txt ZmEn_HiC_sub_1_2.pair.sam --longest 800 --shortest 150</code></pre></div>
+<h2 id="hicup-deduplicater">HiCUP deduplicater</h2>
+<p>The final step of the workflow is to remove read pair duplicates. Duplicates may arise during the PCR protocol or in the sequencing step (optical duplicates). Removing duplicates is done by comparing the start and end coordinates of both reads of a read pair.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup_deduplicator</span> --zip ZmEn_HiC_sub_1_2.filt.sam</code></pre></div>
+<h2 id="run-whole-hicup-pipeline">Run whole HiCUP pipeline</h2>
+<p>An useful feature of HiCUP is that it can be run as a complete pipeline, producing a final html report.</p>
+<p>To do this we setup a configuration file:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#Example configuration file for the hicup Perl script - edit as required</span>
+<span class="co">########################################################################</span>
+
+<span class="co">#Directory to which output files should be written (optional parameter)</span>
+<span class="co">#Set to current working directory by default </span>
+<span class="kw">Outdir</span>:
+
+<span class="co">#Number of threads to use</span>
+<span class="kw">Threads</span>: 1
+
+<span class="co">#Suppress progress updates (0: off, 1: on)</span>
+<span class="kw">Quiet</span>:0
+
+<span class="co">#Retain intermediate pipeline files (0: off, 1: on)</span>
+<span class="kw">Keep</span>:0
+
+<span class="co">#Compress outputfiles (0: off, 1: on)</span>
+<span class="kw">Zip</span>:1
+
+<span class="co">#Path to the alignment program (Bowtie or Bowtie2)</span>
+<span class="co">#Remember to include the executable Bowtie/Bowtie2 filename.</span>
+<span class="co">#Note: ensure you specify the correct aligner i.e. Bowtie when </span>
+<span class="co">#using Bowtie indices, or Bowtie2 when using Bowtie2 indices. </span>
+<span class="co">#In the example below Bowtie2 is specified.</span>
+<span class="kw">Bowtie2</span>: /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2
+
+<span class="co">#Path to the reference genome indices</span>
+<span class="co">#Remember to include the basename of the genome indices</span>
+<span class="kw">Index</span>: maize_mini2
+
+<span class="co">#Path to the genome digest file produced by hicup_digester</span>
+<span class="kw">Digest</span>: Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt
+
+<span class="co">#FASTQ format (valid formats: &#39;Sanger&#39;, &#39;Solexa_Illumina_1.0&#39;, &#39;Illumina_1.3&#39; or &#39;Illumina_1.5&#39;)</span>
+<span class="co">#If not specified, HiCUP will try to determine the format automatically by analysing</span>
+<span class="co">#one of the FASTQ files. All input FASTQ will assumed to be in this format</span>
+<span class="kw">Format</span>: 
+
+<span class="co">#Maximum di-tag length (optional parameter)</span>
+<span class="kw">Longest</span>: 800
+
+<span class="co">#Minimum di-tag length (optional parameter)</span>
+<span class="kw">Shortest</span>: 100
+
+<span class="co">#FASTQ files to be analysed, placing paired files on adjacent lines</span>
+<span class="kw">ZmEn_HiC_sub_1.fq.gz</span>
+<span class="kw">ZmEn_HiC_sub_2.fq.gz</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup</span> --config hicup_config.txt</code></pre></div>
+<p>Finally let’s inspect the html output.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">open</span> ZmMC_HiC_2.1.10_sub_1_2.HiCUP_summary_report.html</code></pre></div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="mailto:selene.fernandez.valverde@gmail.com">Contacto</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">Licencia</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>

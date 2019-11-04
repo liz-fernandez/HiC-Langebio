@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>CABANA Workshop: Matrix Visualization</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="PBI - Transcriptomica" href="http://bi.ira.cinvestav.mx:8282/"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="https://liz-fernandez.github.io/HiC-Langebio/" title="HiC Workshop">
+          <img alt="Logo Cinvestav-Royal" src="img/cinvestav_Royal.jpg" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <h1 class="title">Matrix Visualization</h1>
+          <h2 id="learning-objectives">Learning objectives</h2>
+<ul>
+<li>Use juicebox to visualize a HiC matrix</li>
+<li>Use HiCExplorer to generate images of a matrix slice</li>
+</ul>
+<h2 id="juicebox-interactive-visualization">Juicebox interactive visualization</h2>
+<p>A common visualization task for HiC data is to interactively explore the matrix for quality control purposes, to generate hypothesis or to confirm expected interaction patterns.</p>
+<p>For the first part of the practical, we are using the juicebox browser interactively.</p>
+<ul>
+<li>Load a HiC matrix</li>
+<li>Explore multiple resolutions and corrections</li>
+<li>Lock resolutions and zoom</li>
+<li>Add compartment information.</li>
+<li>Explore a distance normalized matrix</li>
+<li>Load a second HiC matrix as a control</li>
+<li>Add 1D tracks</li>
+<li>Add 2D tracks</li>
+<li>Export an interesting view</li>
+</ul>
+<h2 id="hicexplorer-for-command-line-visualization">HiCexplorer for command line visualization</h2>
+<p>Another visualization approach is to include a command in a script that automatically generates figures. This is useful for generating reproducible workflows.</p>
+<p>We will use the HiCexplorer command line tools for this purpose.</p>
+<p>First, let’s plot a square matrix. This might be useful to explore large regions.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --matrix ZmMC_HiC_1_1_2.hicup.mcool::/resolutions/100000 --region 2:120000000-132000000 --outFileName full_matrix.png</code></pre></div>
+<p>Let’s try the same plot, but on a log scale.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --matrix ZmMC_HiC_1_1_2.hicup.mcool::/resolutions/100000 --region 2:120000000-132000000 --log1p --outFileName full_matrix_log.png</code></pre></div>
+<p>Now open both plots and compare.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">open</span> full_matrix_log.png
+<span class="kw">open</span> full_matrix.png</code></pre></div>
+<p>Another approach is to plot the upper triangle of the diagonal. This is particularly useful to plot the matrix alongside with other data tracks.</p>
+<p>The hicPlotTADs function requires a track configuration file like the following one:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">[<span class="kw">x-axis</span>]
+<span class="kw">where</span> = top
+
+[<span class="kw">hic</span> matrix]
+<span class="kw">file</span> = ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool
+<span class="kw">title</span> = Hi-C data
+<span class="kw">transform</span> = log1p
+<span class="kw">file_type</span> = hic_matrix</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotTADs</span> --tracks hic_track.ini --region 2:120000000-132000000 -out horiz_mat.png</code></pre></div>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="mailto:selene.fernandez.valverde@gmail.com">Contacto</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">Licencia</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>
