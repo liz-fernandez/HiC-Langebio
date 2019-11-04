@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>CABANA Workshop: Feature annotation: Compartments, TADs and peaks</title>
+    <title>HiC Workshop: </title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,13 +26,9 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <h1 class="title">Feature annotation: Compartments, TADs and peaks</h1>
-          <h2 id="learning-objectives">Learning objectives</h2>
-<ul>
-<li>Identify and visualize A/B compartments</li>
-<li>Identify and visualize TADs</li>
-<li>Identify and visualize interaction peaks</li>
-</ul>
+                    <h1 class="title"></h1>
+          <hr />
+<p>layout: page title: Theoretical and Practical HiC Workshop subtitle: Feature annotation: Compartments, TADs and peaks minutes: 5</p>
 <h2 id="compartments">Compartments</h2>
 <p>One of the coarsest levels of higher order chromatin organization is the spatial segregation of transcriptionally active and inactive genomic regions. In the earliest HiC maps, these regions were identified as a checker board pattern in the off diagonal. Two global compartments were proposed: A compartment of increased interactions among active regions, and B compartment of inactive regions.</p>
 <p>The checker board pattern implies that active regions have a similar interaction profile, so their correlation should be higher than with inactive regions.</p>
@@ -72,10 +68,16 @@
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hiccups</span> --cpu --threads 4 -c 2 -r 10000 ZmMC_HiC_2.1.10_sub_1_2.hicup.hic -k KR maize_hiccups_loops</code></pre></div>
 <p>Now let’s look at the aggregated peak plot.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">apa</span> -r 10000 -c 2 ZmMC_HiC_2.1.10_sub_1_2.hicup.hic maize_hiccups_loops maize_hiccups_apa </code></pre></div>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="challenge"><span class="glyphicon glyphicon-pencil"></span>Challenge:</h2>
+</div>
+<div class="panel-body">
 <ul>
-<li>Challenge:</li>
 <li>Visualize the resulting peaks in juicebox.</li>
 </ul>
+</div>
+</section>
         </div>
       </div>
       </article>

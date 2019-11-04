@@ -1,15 +1,15 @@
 ---
-title: "Matrix Visualization"
-output: 
-  html_document:
-    keep_md: true
+layout: page
+title: Theoretical and Practical HiC Workshop
+subtitle: Matrix Visualization
+minutes: 5
 ---
 
 
 
-## Learning objectives  
-- Use juicebox to visualize a HiC matrix
-- Use HiCExplorer to generate images of a matrix slice 
+> ## Learning objectives {.objectives}
+> - Use juicebox to visualize a HiC matrix
+> - Use HiCExplorer to generate images of a matrix slice 
 
 ## Juicebox interactive visualization
 
@@ -37,44 +37,44 @@ First, let's plot a square matrix. This might be useful to explore large regions
 Let's take a look at the whole chromosome.
 
 
-```bash
+~~~ {.bash}
 hicPlotMatrix --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_corrected.png
 
-```
+~~~
 
 Now let's try the same plot, but on a log scale. 
 
 
-```bash
+~~~ {.bash}
 hicPlotMatrix --log1p --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_log.png 
 
-```
+~~~
 
 Now open both plots and compare.
 
 
-```bash
+~~~ {.bash}
 open full_matrix_log.png
 open full_matrix.png
-```
+~~~
 
 We can also plot a smaller region.
 
 
-```bash
+~~~ {.bash}
 hicPlotMatrix --log1p --region 2:125000000-130000000 --matrix ZmMC_50k_corrected.cool --outFileName ZmMC_50k_region_log.png
-```
+~~~
 
 We can compare differences between our conditions by plotting a difference matrix. 
 
-```bash
+~~~ {.bash}
 hicCompareMatrices --operation log2ratio --matrices ZmMC_500k_corrected.cool ZmEn_500k_corrected.cool --outFileName ZmMC_ZmEn_500k_log2.cool
-```
+~~~
 
 
-```bash
+~~~ {.bash}
 hicPlotMatrix --matrix ZmMC_ZmEn_500k_log2.cool --outFileName ZmMC_ZmEn_500k_log2.png
-```
+~~~
 
 
 Another approach is to plot the upper triangle of the diagonal. This is particularly useful to plot the matrix alongside with other data tracks. 
@@ -82,7 +82,7 @@ Another approach is to plot the upper triangle of the diagonal. This is particul
 The hicPlotTADs function requires a track configuration file like the following one:
 
 
-```bash
+~~~ {.bash}
 [hic matrix]
 file = ZmMC_10k_corrected.cool
 title = Hi-C data
@@ -90,13 +90,13 @@ transform = log1p
 file_type = hic_matrix
 depth = 300000
 
-```
+~~~
 
 
 
-```bash
+~~~ {.bash}
 hicPlotTADs --tracks hic_track.ini --region 2:127000000-128000000 -out ZmMC_10k_horiz_mat.png
-```
+~~~
 
 
 

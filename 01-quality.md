@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Introduction to Next-generation Sequencing
+title: Theoretical and Practical HiC Workshop
 subtitle: Quality control of NGS data
 minutes: 5
 ---

@@ -1,9 +1,10 @@
 ---
 layout: page
-title: Introduction to Next-generation Sequencing
+title: Theoretical and Practical HiC Workshop
 subtitle: Read alignment
 minutes: 5
 ---
+
 > ## Learning Objectives {.objectives}
 >
 > * Align sequencing data to a reference (genomes or transcriptomes)
@@ -645,21 +646,6 @@ $ samtools index tophat_out/sorted_accepted_hits.bam
 
 The first step orders the results by their coordinates and the second one creates indexes
 to speed up the display using a browser.
-
-> ## Task - Aligning the filtered readings to the transcriptome {.challenge}
->
-> We have aligned the readings to the genome but we also want to align them directly
-> to the transcriptome. We are going to review the TopHat2 manual and use the options
-> that allows us to map readings directly to transcriptomes.
->
-> * **Clue:** You can not use the previously generated index.
->
-> ### Solution
->
-> ~~~ {.bash}
-> $ bowtie2-build ./trinity_out_dir/Trinity.fasta Trinity_assembly_Sp
-> $ tophat2 -I 300 -i 20 Trinity_assembly_Sp Sp_ds.left.fq.gz,Sp_hs.left.fq.gz,Sp_log.left.fq.gz,Sp_plat.left.fq.gz Sp_ds.right.fq.gz,Sp_hs.right.fq.gz,Sp_log.right.fq.gz,Sp_plat.right.fq.gz
-> ~~~
 
 
 

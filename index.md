@@ -35,26 +35,22 @@ Link to exp protocol PDF
 2. Quality control of HiC data.
 	* [Practical](01-quality.html)
 3. HiC read alignment
-	* [Practical](02-mapping.html)
-4. Obtaining valid HiC pairs
-	* [Practical](03-validpairs.html)
+	* [Practical](03-hicup.html)
+
+	
+
+<!--
 5. HiC Matrix construction and correction
 	* [Practical](04-matrix.html)
-7. HiC Data formats
-	* [Practical](05-hicformats.html)
-8. Visualization
-	* [Practical](06-hicvisualization.html)
+8. HiC Data formats and visualization
+	* [Practical](05-visualization.html)
 9. Compartment Analysis
-	* [Practical](07-hiccompartments.html)
+	* [Practical](06-feature_calling.html)
 10. Peak calling 
 	* [Practical](08-peaks.html)
 11. Differential interactions
 	* [Practical](09-diffinteractions.html)
 
-	
-
-<!--
-temp 
 --> 
 
 
