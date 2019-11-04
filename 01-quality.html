@@ -37,7 +37,7 @@
 </ul>
 </blockquote>
 <h2 id="downloading-the-data">Downloading the data</h2>
-<p>The first thing we do when receiving our data is to download them. Our collaborator has provided the <a href="https://drive.google.com/open?id=0B9ZVSRlHL8cIbm5EUXczdzM4a2M">link</a>. Once downloaded we will copy them into our docker container using the following command:</p>
+<p>The first thing we do when receiving our data is to download them. Our collaborator has provided the <a href="https://drive.google.com/open?id=0B9ZVSRlHL8cIbm5EUXczdzM4a2M">link</a>. Once downloaded we will copy them into our docker container using the following command. Remember to replace the id by your docker id:</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">docker</span> cp FastQC_Short.tar.gz a646764e06a0:/usr/local/data/FastQC_Short.tar.gz</code></pre></div>
 <p>They are usually in a compressed format. We can decompress the data using the <code>tar</code> command:</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">tar</span> -xvf FastQC_Short.tar.gz</code></pre></div>
@@ -371,6 +371,8 @@ Analysis complete for Trimmed_Partial_SRR2467141.fastq</code></pre>
 <p>Compare html files between raw and clean sequences. Summarizes: What differences are there? What do you think is the cause of these differences?</p>
 </div>
 </section>
+<p>We save our data using:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> commit a646764e06a0 lizfernandez/hic-langebio:day1</code></pre></div>
         </div>
       </div>
       </article>
