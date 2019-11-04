@@ -27,6 +27,7 @@ You can consult the schedule here:
 ### Experimental protocol
 
 Link to exp protocol PDF
+[Protocol](SLIDES/Hi_C_workshop_protocol_Final.pdf).
 
 ### Bioinformatics Syllabus
 
