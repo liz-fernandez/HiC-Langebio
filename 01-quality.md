@@ -5,7 +5,7 @@ subtitle: Quality control of NGS data
 minutes: 5
 ---
 
-> ## Learning objectives {.objectives}
+> ## Learning objectives
 >
 > *   Understand the FastQ format.
 > *   Understand the concept of sequence quality. 
@@ -13,7 +13,7 @@ minutes: 5
 
 ## Downloading the data
 
-The first thing we do when receiving our data is to download them. Our collaborator has provided the link to the data in his email. Once downloaded we will copy them into our docker container using the following command:
+The first thing we do when receiving our data is to download them. Our collaborator has provided the [link](https://drive.google.com/open?id=0B9ZVSRlHL8cIbm5EUXczdzM4a2M). Once downloaded we will copy them into our docker container using the following command:
 
 ~~~ {.bash}
 $ docker cp FastQC_Short.tar.gz a646764e06a0:/usr/local/data/FastQC_Short.tar.gz
@@ -530,10 +530,6 @@ Open the html result [Trimmed_Partial_SRR2467141_fastqc.html](http://liz-fernand
 > What differences are there?
 > What do you think is the cause of these differences?
 
-> ## Exercise - Quality analysis {.challenge}
->
-> Perform a quality analysis and cut by Trimmomatic of each of the files
-fastq in the directory that we decompressed. 
 
 
 
