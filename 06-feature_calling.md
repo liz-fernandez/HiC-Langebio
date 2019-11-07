@@ -1,8 +1,16 @@
 ---
-layout: page
-title: Theoretical and Practical HiC Workshop
-subtitle: Feature annotation: Compartments, TADs and peaks
-minutes: 5
+title: "Feature annotation: Compartments, TADs and peaks"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+
+## Learning objectives  
+- Identify and visualize A/B compartments
+- Identify and visualize TADs
+- Identify and visualize interaction peaks
 
 ## Compartments
 
@@ -13,11 +21,11 @@ The checker board pattern implies that active regions have a similar interaction
 We can inspect the pearson correlation matrix to visualize this concept.
 
 
-~~~ {.bash}
-hicTransform --method pearson -m ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool --outFileName pearson.cool
+```bash
+hicTransform --method pearson -m ZmMC_500k_corrected.cool --outFileName ZmMC_500k_pearson.cool
 
-hicPlotMatrix -m pearson.cool -o plot_pearson.png --region 2:120000000-132000000 
-~~~
+hicPlotMatrix -m ZmMC_500k_pearson.cool -o ZmMC_500k_pearson.png
+```
 
 Principal Component Analysis is a dimentionality reduction technique that finds linear combinations of the original matrix variables that a) maximize the variance, b) are independent, and c) are ordered by the percentage of explained variance. This means that applying PCA can be useful to reduce the global correlation patterns to a single vector that captures most of the variability.
 
@@ -26,26 +34,24 @@ The A / B compartments were originally defined in terms of the first component o
 We can use the hicPCA command to obtain this principal component.
 
 
-~~~ {.bash}
-hicPCA -noe 1 –matrix ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool  --format bigwig -o pca1.bw
-~~~
+```bash
+hicPCA -noe 1 --matrix ZmMC_500k_corrected.cool  --format bigwig -o ZmMC_500k_pca1.bw
+```
 
 Now let's plot the first principal component beside the matrix.
 
 
-~~~ {.bash}
-hicPlotMatrix -m ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool -o plot_compartments.png --log1p --region 2:120000000-132000000 --bigwig pca1.bedgraph
-~~~
+```bash
+hicPlotMatrix -m ZmMC_500k_corrected.cool -o ZmMC_500k_compartments.png --log1p --bigwig ZmMC_500k_pca1.bw --perChromosome
+```
 
 To emphasize compartmentalization, we can also plot the pearson correlation matrix. 
 
 
-~~~ {.bash}
-hicTransform --method pearson -m ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool --outFileName pearson.cool
+```bash
 
-
-hicPlotMatrix -m pearson.cool -o plot_pearson.png --region 2:120000000-132000000 --bigwig pca1.bw
-~~~
+hicPlotMatrix -m ZmMC_500k_pearson.cool -o ZmMC_500k_compartments_pearson.png --bigwig ZmMC_500k_pca1.bw --perChromosome
+```
 
 The first component sign only tells us which regions are interacting more frequently with which others, so we can assign two compartments this way. However, from the interaction frequency alone we cannot tell wether a region is transcriptionally active or not. 
 
@@ -54,9 +60,18 @@ For this reason, additional information is often used to assign the A and B stat
 Let's make a new plot to add histone modification information (H3K27me3, which should mark the B compartment).
 
 
-~~~ {.bash}
-hicPlotMatrix -m pearson.cool -o plot_pearson.png --region 2:120000000-132000000 --bigwig pca1.bw --bigwig ZmMC_H3K27me3.bw
-~~~
+```bash
+wget http://www.epigenome.cuhk.edu.hk/Hi-C_Data/bigwig/ZmMC_H3K4me3.bw
+```
+
+
+
+```bash
+hicPlotMatrix --log1p -m ZmMC_500k_corrected.cool -o ZmMC_500k_histonemod.png --perChromosome --bigwig ZmMC_H3K4me3.bw
+```
+
+We can use the histone modification track to flip the sign if needed. In this case, it seems that the A compartment has the negative sign, so let's call the compartments again. 
+
 
 
 ## TADs
@@ -73,49 +88,104 @@ In particular, hicFindTADs works in the following way:
 - To double check that these are likely boundaries, for each putative boundary bin, the distribution of Z scores within its diamond submatrix, is compared to the upstream and downstream diamond submatrices. 
 
 
-~~~ {.bash}
-hicFindTADs -m ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool --outPrefix hic_tads --numberOfProcessors 4
-~~~
+```bash
+hicFindTADs -m ZmMC_50k_corrected.cool --outPrefix ZmMC_50k_tads --correctForMultipleTesting fdr
+```
+
+Now we can use hicPlotTADs to visualize them.
+
+First create a .ini file: 
+
+```bash
+[x-axis]
+fontsize=16
+where=top
+
+
+[hic matrix]
+file = ZmMC_50k_corrected.cool
+title = Hi-C data
+depth = 1000000
+transform = log1p
+file_type = hic_matrix
+
+[spacer]
+
+[tads]
+file = ZmMC_50k_tads_domains.bed
+file_type = domains
+border color = white
+color = gray
+overlay previous = share-y
+line width = 2
+show data range = no
+
+[spacer]
+
+[tad score]
+file = ZmMC_50k_tads_tad_score.bm
+title = "TAD separation score"
+height = 4
+file_type = bedgraph_matrix
+```
+
+Now let's visualize the TADs.
+
+```bash
+hicPlotTADs --tracks hic_tads.ini -o ZmMC_50k_tads.png --region 2:122000000-126000000
+```
+
+Challenge: 
+  - Call TADs for the ZmEn matrix, and make a plot with both matrices and tads
+
 
 ## Peaks
 
 To detect peaks, we input the corrected matrix. 
 
 
-~~~ {.bash}
-hicDetectLoops -m ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool -o loops.bedgraph --maxLoopDistance 20000000 --windowSize 10 --peakWidth 6 --pValuePreselection 0.05 --pValue 0.05 --peakInteractionsThreshold 20 --maximumInteractionPercentageThreshold 0.1 --statisticalTest anderson-darling
+```bash
+hicDetectLoops -m ZmMC_50k_corrected.cool -o ZmMC_50k_loops.bedgraph --maxLoopDistance 20000000 --windowSize 10 --peakWidth 6 --pValuePreselection 0.05 --pValue 0.05 --peakInteractionsThreshold 20 --maximumInteractionPercentageThreshold 0.1 --statisticalTest anderson-darling
 
-~~~
+```
 
 We can plot the matrix with annotated loops.
 
 
-~~~ {.bash}
-hicPlotMatrix -m ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool -o plot.png --log1p --region 1:18000000-22000000 --loops loops.bedgraph
-~~~
+```bash
+hicPlotMatrix -m ZmMC_50k_corrected.cool -o ZmMC_50k_loops.png --log1p --region 2:110000000-114000000 --loops ZmMC_50k_loops.bedgraph
+```
 
 To get an idea of the quality of the callset, besides plotting the annotated matrix we can also produce a plot showing the average of all the called peaks. 
 
 
-~~~ {.bash}
-hicAggregateContacts --matrix  ZmMC_HiC_2.1.10_sub_1_2.hicup.1mb.corrected.cool --BED loops.bedgraph --outFileName ZmMC_HiC_peaks --vMin 0.8 --vMax 2.2 --range 300000:1000000 --numberOfBins 30 --chromosomes 2 --avgType mean --transform obs/exp
-~~~
+```bash
+hicAggregateContacts --matrix  ZmMC_50k_corrected.cool --BED ZmMC_50k_loops.bedgraph --outFileName ZmMC_HiC_peaks.png --vMin 0.8 --vMax 2.2 --range 300000:1000000 --numberOfBins 30 --chromosomes 2 --avgType mean --transform obs/exp
+```
 
 In the maize Dong et al. paper, they call peaks using HiCCUPs. 
 
 To use this juicer tool we need the .hic matrix. 
 
+We generated a .hic matrix in a previous practical. Let's make a link to our current working directory.
 
-~~~ {.bash}
-hiccups --cpu --threads 4 -c 2 -r 10000 ZmMC_HiC_2.1.10_sub_1_2.hicup.hic -k KR maize_hiccups_loops
-~~~
+
+```bash
+ln -s /usr/local/data/hic_workshop_data/prac4_data/ZmEn_HiC_2.hic .
+```
+
+
+
+```bash
+java -jar /usr/local/src/juicer/juicer_tools_1.13.02.jar hiccups --cpu --threads 2 -r 10000 ZmEn_HiC_2.hic -k KR maize_hiccups_loops
+```
 
 Now let's look at the aggregated peak plot. 
 
 
-~~~ {.bash}
-apa -r 10000 -c 2 ZmMC_HiC_2.1.10_sub_1_2.hicup.hic maize_hiccups_loops maize_hiccups_apa 
-~~~
+```bash
+java -jar /usr/local/src/juicer/juicer_tools_1.13.02.jar apa -r 10000 ZmEn_HiC_2.hic maize_hiccups_loops maize_hiccups_apa 
+```
 
-> ## Challenge: {.challenge}
-> * Visualize the resulting peaks in juicebox.
+* Challenge:
+- Visualize the resulting peaks in juicebox.
