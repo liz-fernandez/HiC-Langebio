@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>HiC Workshop: Theoretical and Practical HiC Workshop</title>
+    <title>HiC Workshop: HiC alignment strategies</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,21 +26,13 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">Theoretical and Practical HiC Workshop</h1></a>
-          <h2 class="subtitle">HiC alignment strategies</h2>
-          <section class="objectives panel panel-warning">
-<div class="panel-heading">
-<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
-</div>
-<div class="panel-body">
+                    <h1 class="title">HiC alignment strategies</h1>
+          <h2 id="learning-objectives">Learning objectives</h2>
 <ul>
-<li>Generate the genome index for mapping</li>
-<li>Generate a restriction fragment digested genome file</li>
-<li>Run HiCUP truncator to truncate the 3’ part of reads after the ligation motif</li>
-<li>Run HiCUP</li>
+<li>Setting up genome files</li>
+<li>Run HiCUP steps and inspect the output</li>
+<li>Interpret the HiCUP report</li>
 </ul>
-</div>
-</section>
 <h2 id="setting-up-the-genome-files">Setting up the genome files</h2>
 <p>In order to run HiCUP to map and filter HiC reads, two files must be generated: the bowtie2 index, and the digested genome file.</p>
 <p>First we generate a bowtie2 index for the genome.</p>
@@ -121,6 +113,10 @@
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicup</span> --config hicup_config.txt</code></pre></div>
 <p>Finally let’s inspect the html output.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">open</span> ZmMC_HiC_2.1.10_sub_1_2.HiCUP_summary_report.html</code></pre></div>
+<p>For further information about HiCUP about you can access the following resources:</p>
+<p>HiCUP documentation https://www.bioinformatics.babraham.ac.uk/projects/hicup/read_the_docs/html/index.html</p>
+<p>Video explainer of HiCUP reports https://www.youtube.com/watch?v=xWpjlXnsOU4</p>
+<p>HiCUP publication https://www.ncbi.nlm.nih.gov/pubmed/26835000</p>
         </div>
       </div>
       </article>
