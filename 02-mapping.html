@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>CABANA Workshop: Introduction to Next-generation Sequencing</title>
+    <title>HiC Workshop: Theoretical and Practical HiC Workshop</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,7 +26,7 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">Introduction to Next-generation Sequencing</h1></a>
+                    <a href="index.html"><h1 class="title">Theoretical and Practical HiC Workshop</h1></a>
           <h2 class="subtitle">Read alignment</h2>
           <section class="objectives panel panel-warning">
 <div class="panel-heading">
@@ -603,20 +603,6 @@ r001    147 ref 37  30  9M  =   7   -39 CAGCGGCAT   *   NM:i:1</code></pre>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">samtools</span> sort tophat_out/accepted_hits.bam <span class="kw">&gt;</span> tophat_out/sorted_accepted_hits.bam
 $ <span class="kw">samtools</span> index tophat_out/sorted_accepted_hits.bam</code></pre></div>
 <p>The first step orders the results by their coordinates and the second one creates indexes to speed up the display using a browser.</p>
-<section class="challenge panel panel-success">
-<div class="panel-heading">
-<h2 id="task---aligning-the-filtered-readings-to-the-transcriptome"><span class="glyphicon glyphicon-pencil"></span>Task - Aligning the filtered readings to the transcriptome</h2>
-</div>
-<div class="panel-body">
-<p>We have aligned the readings to the genome but we also want to align them directly to the transcriptome. We are going to review the TopHat2 manual and use the options that allows us to map readings directly to transcriptomes.</p>
-<ul>
-<li><strong>Clue:</strong> You can not use the previously generated index.</li>
-</ul>
-<h3 id="solution">Solution</h3>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">bowtie2-build</span> ./trinity_out_dir/Trinity.fasta Trinity_assembly_Sp
-$ <span class="kw">tophat2</span> -I 300 -i 20 Trinity_assembly_Sp Sp_ds.left.fq.gz,Sp_hs.left.fq.gz,Sp_log.left.fq.gz,Sp_plat.left.fq.gz Sp_ds.right.fq.gz,Sp_hs.right.fq.gz,Sp_log.right.fq.gz,Sp_plat.right.fq.gz</code></pre></div>
-</div>
-</section>
         </div>
       </div>
       </article>

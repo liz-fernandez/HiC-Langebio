@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>HiC Workshop: Theoretical and Practical HiC Workshop</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="PBI - Transcriptomica" href="http://bi.ira.cinvestav.mx:8282/"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="https://liz-fernandez.github.io/HiC-Langebio/" title="HiC Workshop">
+          <img alt="Logo Cinvestav-Royal" src="img/cinvestav_Royal.jpg" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">Theoretical and Practical HiC Workshop</h1></a>
+          <h2 class="subtitle">Generating a HiC matrix</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Use juicer tools to obtain a multi resolution hic matrix (for juicebox visualization)</li>
+<li>Use cooler to obtain a multi resolution hic matrix (for HiCexplorer and HiGlass)</li>
+</ul>
+</div>
+</section>
+<h2 id="hic-.pairs-data-format">HiC .pairs data format</h2>
+<p>In this section we will use our filtered hic read pairs in bam format, and convert it to a data format commonly used by downstream HiC analysis tools.</p>
+<p>First, we will obtain a .pairs format.</p>
+<p>.pairs is a standard format based on plain text proposed by the <a href="https://commonfund.nih.gov/4dnucleome">4DNucleome consortium</a>.</p>
+<p>Here is an example:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">## pairs format v1.0</span>
+<span class="co">#sorted: chr1-chr2-pos1-pos2</span>
+<span class="co">#shape: upper triangle</span>
+<span class="co">#genome_assembly: hg38</span>
+<span class="co">#chromsize: chr1 249250621</span>
+<span class="co">#chromsize: chr2 243199373</span>
+<span class="co">#chromsize: chr3 198022430</span>
+
+<span class="co">#columns: readID chr1 pos1 chr2 pos2 strand1 strand2</span>
+<span class="kw">EAS139</span>:136:FC706VJ:2:2104:23462:197393 chr1 10000 chr1 20000 + +
+<span class="kw">EAS139</span>:136:FC706VJ:2:8762:23765:128766 chr1 50000 chr1 70000 + +
+<span class="kw">EAS139</span>:136:FC706VJ:2:2342:15343:9863 chr1 60000 chr2 10000 + +
+<span class="kw">EAS139</span>:136:FC706VJ:2:1286:25:275154 chr1 30000 chr3 40000 + -</code></pre></div>
+<p>HiC data is often quite large, which means that it is not very efficient to work directly with plain text files. Tools for compression and indexing are available for the .pairs format. Some downstream analysis tools accept compressed and indexed files, which makes storage and access easier.</p>
+<p>You can read more about the specification and supporting tools here: https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md</p>
+<p>We will use the bam2pairs command to obtain a .pairs file.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bam2pairs</span> -l -c chr_file.txt ZmEn_HiC_2_1_2.hicup.bam ZmEn_HiC_2_1_2.hicup</code></pre></div>
+<p>Let’s see how the .pairs format looks like:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">head</span> ZmEn_HiC_2_1_2.hicup.bsorted.pairs</code></pre></div>
+<h2 id="binning-and-matrix-formats">Binning and matrix formats</h2>
+<p>The next step in the workflow is to aggregate the read level pairs into bins. Once the data is binned, other formats are used to store the matrix data.</p>
+<p>We will bin and store matrices using two common tools: juicer_tools, which stores the resulting matrix in the .hic format, and cooler, which uses the .cool format. Both formats are binary and compressed.</p>
+<h3 id="cool">.cool</h3>
+<p>Another common format is .cool. This format is based on the hdf5 (hierachical data format 5) specification, which is also a binary format. There are multiple open source libraries for accessing and writing hdf5 files available for many programming languages.</p>
+<p>.cool files are compatible with HiCExplorer and cooler, common HiC data processing resources. Let’s convert our .pairs file to a .cool file binned at 10Kb resolution. When binning the matrix a high resolution bin size (1kb - 10kb) is recommended because a lower resolution can be easily obtained by summing adjacent bins.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cooler</span> cload pairs -c1 2 -p1 3 -c2 4 -p2 5 chr_file.txt:10000 ZmEn_HiC_2_1_2.hicup.bsorted.pairs ZmEn_2_10k.cool</code></pre></div>
+<p>The .cool files store a single matrix at a single resolution. However, the .mcool format can store multiresolution matrices. The HiGlass browser supports .mcool matrices.</p>
+<p>Let’s obtain a multi resolution matrix with cooler zoomify command.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cooler</span> zoomify ZmEn_2_10k.cool -r 10000,50000,100000,500000 -o ZmEn_2.mcool</code></pre></div>
+<h2 id="matrix-correction">Matrix correction</h2>
+<p>Matrix correction is necesary to remove biases like gc content or mappability.</p>
+<p>In order to correct a matrix, it is assumed that if no biases were affecting the experiment, each bin should have equal “visibility” of contacts.</p>
+<p>This translates to an intuitive solution to matrix correction: transforming the matrix in such a way that the total number of contacts of every row and every column is the same.</p>
+<p>Such a procedure is called “matrix balancing”, and many algorithms have been described to achieve this for applications outside HiC data analysis.</p>
+<p>For HiC data, the most common ones are called Knight-Ruiz (KR), and Iterative Correction (ICE).</p>
+<p>https://liorpachter.wordpress.com/2013/11/17/imakaev_explained/</p>
+<p>In this practical we are interested in comparing four matrices: ZmEn_1, ZmEn_2, ZmMC_1 and ZmMC_2. When comparing matrices, first we must account for differences in sequencing depth between experiments.</p>
+<p>We will use hicExplorer to achieve this. The hicNormalize function will adjust the matrices so the toal sum is equal to the matrix with lower sequencing depth.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicNormalize</span> --matrices ZmEn_1_10k.cool ZmEn_2_10k.cool ZmMC_1_10k.cool ZmMC_2_10k.cool --normalize smallest -o ZmEn_1_10k_norm.cool ZmEn_2_10k_norm.cool ZmMC_1_10k_norm.cool ZmMC_2_10k_norm.cool</code></pre></div>
+<p>Bin level filtering is necesary to remove low count bins. An approach is the “MAD-max” filter. To decide filtering values for this filter we can run a diagnostic plot of a histogram of counts per bin, together with the MAD statistic.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicCorrectMatrix</span> diagnostic_plot --matrix ZmEn_1_10k_norm.cool -o ZmEn_1_diagnostic_10kb.png</code></pre></div>
+<p>Let’s explore the diagnostic plot and choose the cutoff values.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">open</span> ZmEn_1_diagnostic_10kb.png</code></pre></div>
+<p>After deciding on minimum and maximum values, we can proceed to correct the matrix.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">
+<span class="kw">hicCorrectMatrix</span> correct --matrix ZmEn_1_10k_norm.cool --correctionMethod ICE --outFileName ZmEn_1_10k_corrected.cool --filterThreshold -2.5 5</code></pre></div>
+<h2 id="challenge">Challenge:</h2>
+<ul>
+<li>Correct matrices for the remaining replicates and conditions.</li>
+</ul>
+<h2 id="matrix-qc">Matrix QC</h2>
+<p>When working with an experimental design that has multiple conditions and replicates, it is useful to assess how similar the replicates are, and how different the conditions are.</p>
+<p>One approach for global comparison is to plot the linear distance versus the contact frequency. The interaction frequency should decay with distance. However, the shape of the decay curve is often characteristic of a single experimental condition. Replicates should have similar decay curves, while conditions should have different ones.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotDistVsCounts</span> --matrices ZmEn_1_10k_corrected.cool ZmEn_2_10k_corrected.cool ZmMC_1_10k_corrected.cool ZmMC_2_10k_corrected.cool -o plot_vs_counts.png </code></pre></div>
+<p>Another approach is to assess the correlation of counts between replicates and conditions. Replicates should have a higher correlation than conditions.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicCorrelate</span> --log1p --matrices ZmEn_1_10k.cool ZmEn_2_10k.cool ZmMC_1_10k.cool ZmMC_2_10k.cool --range 20000:500000 -oh between_matrix_cor_h.png -os between_matrix_cor_s.png </code></pre></div>
+<h2 id="sum-matrices">Sum matrices</h2>
+<p>A common practice in HiC data is to sum biological replicate matrices in order to increase sequencing depth, and thus matrix resolution. This can be done after checking that the biological replicates are indeed similar. It is advised to also conduct downstream analyses separately on each replicate to assess differences at those levels.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicSumMatrices</span> -m ZmEn_1_10k.cool ZmEn_2_10k.cool -o ZmEn_10k.cool
+<span class="kw">hicSumMatrices</span> -m ZmMC_1_10k.cool ZmMC_2_10k.cool -o ZmMC_10k.cool</code></pre></div>
+<h3 id="hic">.hic</h3>
+<p>The .hic is mainly supported by juicer, juicer_tools, and juicebox from the <a href="https://github.com/aidenlab/juicer">Aiden lab</a>. It is a binary format that stores a HiC matrix with multiple bin sizes and corrections in a single file.</p>
+<p>Let’s convert our .pairs file to a .hic file.</p>
+<p>The juicer_tools pre command bins and corrects the HiC matrix at several resolutions.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">java</span> -Xmx1G -jar /usr/local/src/juicer/juicer_tools_1.13.02.jar pre ZmEn_HiC_2_1_2.hicup.bsorted.pairs ZmEn_HiC_2.hic chr_file.txt</code></pre></div>
+<p>The resulting .hic file stores the matrix at various resolutions, as well as different corrections. This file can be directly uploaded to juicebox for visualization, and is ready to use with juicer_tools.</p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="mailto:selene.fernandez.valverde@gmail.com">Contacto</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">Licencia</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>

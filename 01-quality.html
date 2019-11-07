@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>CABANA Workshop: Introduction to Next-generation Sequencing</title>
+    <title>HiC Workshop: Theoretical and Practical HiC Workshop</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,22 +26,18 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">Introduction to Next-generation Sequencing</h1></a>
+                    <a href="index.html"><h1 class="title">Theoretical and Practical HiC Workshop</h1></a>
           <h2 class="subtitle">Quality control of NGS data</h2>
-          <section class="objectives panel panel-warning">
-<div class="panel-heading">
-<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
-</div>
-<div class="panel-body">
+          <blockquote>
+<h2 id="learning-objectives">Learning objectives</h2>
 <ul>
 <li>Understand the FastQ format.</li>
 <li>Understand the concept of sequence quality.</li>
 <li>Learn how to use software to measure and improve the quality of massive sequencing data.</li>
 </ul>
-</div>
-</section>
+</blockquote>
 <h2 id="downloading-the-data">Downloading the data</h2>
-<p>The first thing we do when receiving our data is to download them. Our collaborator has provided the link to the data in his email. Once downloaded we will copy them into our docker container using the following command:</p>
+<p>The first thing we do when receiving our data is to download them. Our collaborator has provided the <a href="https://drive.google.com/open?id=0B9ZVSRlHL8cIbm5EUXczdzM4a2M">link</a>. Once downloaded we will copy them into our docker container using the following command. Remember to replace the id by your docker id:</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">docker</span> cp FastQC_Short.tar.gz a646764e06a0:/usr/local/data/FastQC_Short.tar.gz</code></pre></div>
 <p>They are usually in a compressed format. We can decompress the data using the <code>tar</code> command:</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">tar</span> -xvf FastQC_Short.tar.gz</code></pre></div>
@@ -375,14 +371,8 @@ Analysis complete for Trimmed_Partial_SRR2467141.fastq</code></pre>
 <p>Compare html files between raw and clean sequences. Summarizes: What differences are there? What do you think is the cause of these differences?</p>
 </div>
 </section>
-<section class="challenge panel panel-success">
-<div class="panel-heading">
-<h2 id="exercise---quality-analysis"><span class="glyphicon glyphicon-pencil"></span>Exercise - Quality analysis</h2>
-</div>
-<div class="panel-body">
-<p>Perform a quality analysis and cut by Trimmomatic of each of the files fastq in the directory that we decompressed.</p>
-</div>
-</section>
+<p>We save our data using:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> commit a646764e06a0 lizfernandez/hic-langebio:day1</code></pre></div>
         </div>
       </div>
       </article>

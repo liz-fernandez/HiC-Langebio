@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>HiC Workshop: Introduction to Next-generation Sequencing</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="PBI - Transcriptomica" href="http://bi.ira.cinvestav.mx:8282/"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="https://liz-fernandez.github.io/HiC-Langebio/" title="HiC Workshop">
+          <img alt="Logo Cinvestav-Royal" src="img/cinvestav_Royal.jpg" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">Introduction to Next-generation Sequencing</h1></a>
+          <h2 class="subtitle">Quality control of NGS data</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li>Understand the FastQ format.</li>
+<li>Understand the concept of sequence quality.</li>
+<li>Learn how to use software to measure and improve the quality of massive sequencing data.</li>
+</ul>
+</div>
+</section>
+<h2 id="downloading-the-data">Downloading the data</h2>
+<p>The first thing we do when receiving our data is to download them. Our collaborator has provided the link to the data in his email. Once downloaded we will copy them into our docker container using the following command:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">docker</span> cp FastQC_Short.tar.gz a646764e06a0:/usr/local/data/FastQC_Short.tar.gz</code></pre></div>
+<p>They are usually in a compressed format. We can decompress the data using the <code>tar</code> command:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">tar</span> -xvf FastQC_Short.tar.gz</code></pre></div>
+<p>This command decompresses a directory called <code>FastQC_Short</code>. We enter that directory:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">cd</span> /usr/local/data/FastQC_Short</code></pre></div>
+<p>Revise its contents:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">ls</span></code></pre></div>
+<pre class="output"><code>Partial_SRR2467141.fastq 
+Partial_SRR2467142.fastq 
+Partial_SRR2467143.fastq 
+Partial_SRR2467144.fastq 
+Partial_SRR2467145.fastq 
+Partial_SRR2467146.fastq
+Partial_SRR2467147.fastq
+Partial_SRR2467148.fastq
+Partial_SRR2467149.fastq
+Partial_SRR2467150.fastq
+Partial_SRR2467151.fastq</code></pre>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="the-name-of-fastq-files"><span class="glyphicon glyphicon-pushpin"></span>The name of fastq files</h2>
+</div>
+<div class="panel-body">
+<p>In this case, the name of the files has been assigned in a arbitrary but often contain important information. For example, the Illumina files generally have the following format:</p>
+<pre class="output"><code>&lt;sample name&gt;_&lt;barcode&gt;_L&lt;lane(3 digits)&gt;_R&lt;read&gt;_&lt;set number (3 digits)&gt;.fastq.gz</code></pre>
+<p>Example: NA10831_ATCACG_L002_R1_001.fastq.gz</p>
+<p>It is ideal to respect these names to avoid losing information.</p>
+</div>
+</aside>
+<p>Let’s review one of the files using the head command. It usually shows us the first 10 lines of a file but with the <code>-n</code> flag will show us the first 12:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">head</span> -n 12 Partial_SRR2467141.fastq </code></pre></div>
+<pre class="output"><code>@SRR2467141.1 SALLY:472:C6NCDACXX:8:1101:1392:1873 length=101
+NTTATTTTTTTCGTTCTTCTTGAAGAAGACGTTACCTACGGCGTATTTGCCCATCTCAGGTATGTCTAGATCAAGATCTAACTTGAATTCTCTTTTCATAA
++SRR2467141.1 SALLY:472:C6NCDACXX:8:1101:1392:1873 length=101
+#1:=BDDDHDHB?&lt;?CFGGGC9@FF@GGGG&gt;EEEDGDHGFHGE;AEFH&gt;AC@D;@B&gt;C&gt;CCC@C&gt;&gt;DDCC3:&gt;AA5&gt;CC&gt;&gt;CCD&gt;@CCDCDCCCCC@C@&gt;C
+@SRR2467141.2 SALLY:472:C6NCDACXX:8:1101:1326:1950 length=101
+CACCCATTGACTGGCCAAATGCCCCATTATTTTGAGTATTGTTATTTCCAAATAAACTGTTACTATTACTGCCAGCGGCAGAAGTGAATCCACAGATCGGA
++SRR2467141.2 SALLY:472:C6NCDACXX:8:1101:1326:1950 length=101
+??@DFFFFHHFH?GEHEHIDEHCCFEHIE@GIGCHG&lt;DGGIHIGIGGIGHIIFIHFFGDHGGIIHIGIIIIGGEH@EADB&gt;=AA&gt;3@&gt;CCCCCCBC@C###
+@SRR2467141.3 SALLY:472:C6NCDACXX:8:1101:1477:1959 length=101
+CATCTTTTCTTTAGGCACATCATCCTGATAAGTGTACTTACCAGGATATATACCATCGGTATTGATGTTATCGGCATCACATAAAACTAATTCACCAGAAA
++SRR2467141.3 SALLY:472:C6NCDACXX:8:1101:1477:1959 length=101
+@CCFFFFFHHHHHJJJIIJJIJJJJJJEIJJJIIJJJIJIJJIJJIIIJJJIIIHIIIJDHIJJIGJJIJJJJJIHHHFFFFFEEEEEEDDEDDDDDDDDD</code></pre>
+<p>This file is in <code>fastq</code> format. This is the format that most modern sequencing platforms generate. This format is a modification of the sequence format <a href="https://en.wikipedia.org/wiki/FASTA_format">Fasta</a>. You can recognize them because they end with the extension <code>.fq</code> or <code>.fastq</code>.</p>
+<p>FastQ files are plain ASCII text files that contain both the sequences detected by the sequencer as well as information about the quality of each one of the sequenced nucleotides.</p>
+<aside class="callout panel panel-info">
+<div class="panel-heading">
+<h2 id="do-not-change-fastq-files"><span class="glyphicon glyphicon-pushpin"></span>Do not change fastq files!</h2>
+</div>
+<div class="panel-body">
+<p>The fastq files that you receive after a sequencing experiment will be requested when you want to publish an article. Ideally, make a couple of copies on different devices as soon as you receive them and <em>do not modify them manually</em>.</p>
+<p>It is also recommended that, if you have the information at hand, you create a small README file (plain text) that is in the same directory as your fastq files and describe how the experiment was performed, how many replicas there are of each condition, which indexes and controls were used, etc. This will help you greatly when trying to interpret your results.</p>
+</div>
+</aside>
+<p>We will take a single sequence as an example:</p>
+<pre class="output"><code>@SRR2467141.1 SALLY:472:C6NCDACXX:8:1101:1392:1873 length=101
+NTTATTTTTTTCGTTCTTCTTGAAGAAGACGTTACCTACGGCGTATTTGCCCATCTCAGGTATGTCTAGATCAAGATCTAACTTGAATTCTCTTTTCATAA
++SRR2467141.1 SALLY:472:C6NCDACXX:8:1101:1392:1873 length=101
+#1:=BDDDHDHB?&lt;?CFGGGC9@FF@GGGG&gt;EEEDGDHGFHGE;AEFH&gt;AC@D;@B&gt;C&gt;CCC@C&gt;&gt;DDCC3:&gt;AA5&gt;CC&gt;&gt;CCD&gt;@CCDCDCCCCC@C@&gt;C</code></pre>
+<p>We see that each sequence is represented by 4 lines.</p>
+<ol style="list-style-type: decimal">
+<li><strong>Sequence name</strong> - This line begins with the symbol <code>@</code>, followed by the read name.</li>
+<li>The nucleotide <strong>sequence</strong>.</li>
+<li><strong>Second title</strong> - This line starts with the symbol <code>+</code>. Generally the information is the same as in the first line but it can also be blank as long as it begins with the symbol <code>+</code>.</li>
+<li><strong>Quality information</strong> - It contains an ASCII character string. Every one of these characters corresponds to a nucleotide of the sequence and represents the quality of the same. The score of each nucleotide indicates the level of confidence that you have in that base. High levels indicate that the base has been reported correctly while low levels suggest that there is uncertainty about the actual sequence in this position.</li>
+</ol>
+<p>The name of the sequence also contains important information. In In this case, the Illumina data provide the following information:</p>
+<pre class="output"><code>@&lt;instrument&gt;:&lt;run&gt;:&lt;flow cell identifier&gt;:&lt;lane&gt;:&lt;square&gt;:&lt;x-coord&gt;:&lt;y-coord&gt; &lt;read&gt;:&lt;if the ead was filtered&gt;:&lt;control number&gt;:&lt;sequence index&gt; length=&lt;sequence size&gt;</code></pre>
+<p>The level of quality represented in the fourth line is called Phred score. In its original format a Phred score is simply the logarithm of the probabilities of error:</p>
+<pre class="output"><code>Phred score = - 10 * log10(error probability)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Quality score</th>
+<th align="left">Error probability</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Q40 0.0001</td>
+<td align="left">(1 en 10,000)</td>
+</tr>
+<tr class="even">
+<td align="left">Q30 0.001</td>
+<td align="left">(1 en 1,000)</td>
+</tr>
+<tr class="odd">
+<td align="left">Q20 0.01</td>
+<td align="left">(1 en 100)</td>
+</tr>
+<tr class="even">
+<td align="left">Q10 0.1</td>
+<td align="left">(1 en 10)</td>
+</tr>
+</tbody>
+</table>
+<p>Wait, if the Phred scores are numbers, why do the quality scores shown in line four are a mixture of alphanumeric symbols?</p>
+<pre class="output"><code>#1:=BDDDHDHB?&lt;?CFGGGC9@FF@GGGG&gt;EEEDGDHGFHGE;AEFH&gt;AC@D;@B&gt;C&gt;CCC@C&gt;&gt;DDCC3:&gt;AA5&gt;CC&gt;&gt;CCD&gt;@CCDCDCCCCC@C@&gt;C</code></pre>
+<p>This is because these scores are encoded in ASCII (American Standard Code for Informational Interchange). In short, ASCII is a coding system that equates a number to a character alphanumeric. For example, the character ‘A’ is represented by the number 65 in the table ASCII code, while ‘%’ is represented by the number 37. This system allows us to represent a total of 256 different characters.</p>
+<p>Why use ASCII? Given the huge amount of data produced during massive parallel sequencing, it’s all about reducing the data to the maximum. The ASCII system allows us to represent two-digit numbers in a single bit (8 bits), which reduces the space they occupy these files. If you are interested in the subject, you can read more about binary coding.</p>
+<p>Finally, since this quality coding system was invented, which is already used with Sanger-type sequencing, different companies have “slipped” the scales of ASCII conversion because what is important to verify with the company or laboratory in which version of this scale have been coded to use the correct conversion. Some of the quality control tools that we will use infer the type of coding used directly from the data provided.</p>
+<h2 id="verifying-the-quality-of-the-sequences">Verifying the quality of the sequences</h2>
+<p>We will verify the quality of the sequences using the program <a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/">FastQC</a>. This is one of the most used programs for this type of analysis, since it provides a global vision of how the data is structured, as well as being pretty fast.</p>
+<p>FastQC reads a series of sequencing files and produces a report of quality control for each one, which consists of a number of different modules, each of which helps us identify different problems in our data.</p>
+<p>Let’s analyze our first sequencing file, first we created a directory to store our results:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">mkdir</span> QUAL</code></pre></div>
+<p>And we perform our quality analysis using FastQC:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">fastqc</span> -O ./QUAL/ Partial_SRR2467141.fastq </code></pre></div>
+<pre class="output"><code>Started analysis of Partial_SRR2467141.fastq
+Approx 20% complete for Partial_SRR2467141.fastq
+Approx 40% complete for Partial_SRR2467141.fastq
+Approx 60% complete for Partial_SRR2467141.fastq
+Approx 80% complete for Partial_SRR2467141.fastq
+Analysis complete for Partial_SRR2467141.fastq</code></pre>
+<p>Once finished, let’s review the result:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">cd</span> QUAL
+$ <span class="kw">ls</span></code></pre></div>
+<pre class="output"><code>Partial_SRR2467141_fastqc.html 
+Partial_SRR2467141_fastqc.zip</code></pre>
+<p>The easiest way to explore these results is by opening the html file in your browser. You can download them to a working directory in your computer using the command:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">docker</span> cp a646764e06a0:/usr/local/data/FastQC_Short/QUAL/Partial_SRR2467141_fastqc.html .</code></pre></div>
+<p>You can open it by double clicking on the file.</p>
+<p>The results should be similar to <a href="http://liz-fernandez.github.io/transcriptome_analysis/Partial_SRR2467141_fastqc.html">this</a>.</p>
+<p>This page contains a lot of information broken down into the following sections:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Basic Statistics</strong> - The basic statistics of the experiment.</li>
+<li><strong>Per base sequence quality</strong> - Box diagrams showing the quality of each base.</li>
+<li><strong>Per tile sequence quality</strong> - It contains the box (tile) from which each sequence comes. It only appears if the analyzes are made in an Illumina library that retains its original identifiers.</li>
+<li><strong>Per sequence quality scores</strong> - It allows to see if a subgroup of sequences has bad quality.</li>
+<li><strong>Per base sequence content</strong> - Shows the proportion of each base in each position.</li>
+<li><strong>Per sequence GC content</strong> - Compares the observed GC distribution with a modeled GC distribution.</li>
+<li><strong>Per base N content</strong> - Indicates how many nucleotides could not be interpreted and are indicated with an N.</li>
+<li><strong>Sequence Length Distribution</strong> - Shows the sequence length distribution.</li>
+<li><strong>Sequence Duplication Levels</strong> - Indicate how many times each sequence is repeated. It is done only in the first 100,000 sequences.</li>
+<li><strong>Overrepresented sequences</strong> - Shows over represented sequences.</li>
+<li><strong>Adapter Content</strong> - Shows the content of adapters in the library.</li>
+</ol>
+<p>Let’s review the results once more by clicking on the <a href="http://liz-fernandez.github.io/transcriptome_analysis/Partial_SRR2467141_fastqc.html">link</a>.</p>
+<p>In general we see that most of the criteria have a green tick of quality control pass, with the exception of per base sequence content, GC content per base and overrepresented sequences.</p>
+<p>Although we did not provide this information, the program has inferred the coding ASCII (Sanger / Illumina 1.9) as well as the number of sequences, their size and its GC content.</p>
+<p>When we observe the <strong>quality per base</strong>, we see that most of the bases are in the area green or have good quality. Each base is represented by a box diagram that provides a good idea about the distribution of quality scores in all the sequences. It is evident that the quality decreases more markedly at the end of the sequence. This is known as small errors accumulate while the longer the sequence, this is one of the reasons why sequencers based in nucleotide incorporation they have a limit on the maximum length of their readings.</p>
+<p>The graph showing the <strong>quality per tile</strong> is almost completely blue showing that the average distribution of errors in the tile is very similar.</p>
+<p>The graph of <strong>quality score per sequence</strong> shows that most of the sequences have high scores.</p>
+<p>However, the <strong>distribution of nucleotides per base</strong> shows that, at the beginning of the sequence, the distribution is very disparate.</p>
+<p>We also observe that:</p>
+<ul>
+<li>The <strong>GC distribution per sequence</strong> is somewhat different to the hypothetical distribution.</li>
+<li>There are few <strong>ambiguous bases (Ns)</strong>.</li>
+<li>All sequences have the same <strong>size</strong>.</li>
+<li>Levels of <strong>duplication of sequences</strong> are very low.</li>
+<li>There are a few <strong>over represented sequences</strong>. Mostly Illumina PCR primers.</li>
+<li>There are no <strong>adapters</strong>.</li>
+</ul>
+<p>When running FastQC, a compressed file called <code>Partial_SRR2467141_fastqc.zip</code>.</p>
+<p>We unpack this file using the following command:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">unzip</span> Partial_SRR2467141_fastqc.zip</code></pre></div>
+<pre class="output"><code>Archive:  Partial_SRR2467141_fastqc.zip
+   creating: Partial_SRR2467141_fastqc/
+   creating: Partial_SRR2467141_fastqc/Icons/
+   creating: Partial_SRR2467141_fastqc/Images/
+  inflating: Partial_SRR2467141_fastqc/Icons/fastqc_icon.png
+  inflating: Partial_SRR2467141_fastqc/Icons/warning.png
+  inflating: Partial_SRR2467141_fastqc/Icons/error.png
+  inflating: Partial_SRR2467141_fastqc/Icons/tick.png
+  inflating: Partial_SRR2467141_fastqc/summary.txt
+  inflating: Partial_SRR2467141_fastqc/Images/per_base_quality.png
+  inflating: Partial_SRR2467141_fastqc/Images/per_tile_quality.png
+  inflating: Partial_SRR2467141_fastqc/Images/per_sequence_quality.png
+  inflating: Partial_SRR2467141_fastqc/Images/per_base_sequence_content.png
+  inflating: Partial_SRR2467141_fastqc/Images/per_sequence_gc_content.png
+  inflating: Partial_SRR2467141_fastqc/Images/per_base_n_content.png
+  inflating: Partial_SRR2467141_fastqc/Images/sequence_length_distribution.png
+  inflating: Partial_SRR2467141_fastqc/Images/duplication_levels.png
+  inflating: Partial_SRR2467141_fastqc/Images/adapter_content.png
+  inflating: Partial_SRR2467141_fastqc/fastqc_report.html
+  inflating: Partial_SRR2467141_fastqc/fastqc_data.txt
+  inflating: Partial_SRR2467141_fastqc/fastqc.fo</code></pre>
+<p>If we enter the newly created directory, we can see the report in plain text format, both the summary:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">cd</span> Partial_SRR2467141_fastqc
+$ <span class="kw">more</span> summary.txt</code></pre></div>
+<pre class="output"><code>PASS    Basic Statistics        Partial_SRR2467141.fastq
+PASS    Per base sequence quality       Partial_SRR2467141.fastq
+PASS    Per tile sequence quality       Partial_SRR2467141.fastq
+PASS    Per sequence quality scores     Partial_SRR2467141.fastq
+FAIL    Per base sequence content       Partial_SRR2467141.fastq
+PASS    Per sequence GC content Partial_SRR2467141.fastq
+PASS    Per base N content      Partial_SRR2467141.fastq
+PASS    Sequence Length Distribution    Partial_SRR2467141.fastq
+PASS    Sequence Duplication Levels     Partial_SRR2467141.fastq
+PASS    Overrepresented sequences       Partial_SRR2467141.fastq
+PASS    Adapter Content Partial_SRR2467141.fastq
+PASS    Kmer Content    Partial_SRR2467141.fastq</code></pre>
+<p>and the full report file:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">more</span> fastqc_data.txt</code></pre></div>
+<p>We have omitted the content since it is very long. Being able to review the results in flat files is extremely useful when results are in a server that does not have a graphical interface.</p>
+<p>FastQC programmers have compiled examples of quality sequencing data diverse Let’s analyze them:</p>
+<ul>
+<li><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/good_sequence_short_fastqc.html">Good data - Illumina</a></li>
+<li><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/bad_sequence_fastqc.html">Bad data - Illumina</a></li>
+<li><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/RNA-Seq_fastqc.html">Dimer contamination</a></li>
+<li><a href="http://www.bioinformatics.babraham.ac.uk/projects/fastqc/small_rna_fastqc.html">Small RNAs with read through the adaptor</a></li>
+</ul>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="how-valid-is-our-analysis"><span class="glyphicon glyphicon-pencil"></span>How valid is our analysis?</h2>
+</div>
+<div class="panel-body">
+<p>Since the data we used only less than 200,000 sequences, can we trust that the complete data will have similar quality? Why or why not?</p>
+</div>
+</section>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="how-do-the-rest-of-the-files-look"><span class="glyphicon glyphicon-pencil"></span>How do the rest of the files look?</h2>
+</div>
+<div class="panel-body">
+<p>Obtain the fastQC report html files for all other three fastq files.</p>
+</div>
+</section>
+<h2 id="cleaning-the-sequences">Cleaning the sequences</h2>
+<p>There are a number of tools to clean sequences and different researchers have different preferences. Similar to other sequencing problems there is an active development of programs for this purpose.</p>
+<p>We will use a program called <a href="http://www.usadellab.org/cms/?page=trimmomatic">Trimmomatic</a>. This is a Java based program which, like FastQC, is very fast. It also has filtering modes for single or pair-end reads.</p>
+<p>The program performs various functions, including:</p>
+<ul>
+<li>Removal of adapters</li>
+<li>Removal of low quality bases at 5 ‘or 3’ of the read</li>
+<li>Scanning of the sequence through a window of 4 nucleotides, cutting when the average quality of the base drops of 15.</li>
+<li>Delete sequences shorter than a particular size</li>
+<li>Cut a specific number of nucleotides at the 5 ‘or 3’ end</li>
+<li>Conversion of quality scores between different versions of Phred.</li>
+</ul>
+<p>The specific functions according to the manual are:</p>
+<ul>
+<li>ILLUMINACLIP: Cut adapter and other illumina-specific sequences from the read.</li>
+<li>SLIDINGWINDOW: Perform a sliding window trimming, cutting once the average quality within the window falls below a threshold.</li>
+<li>LEADING: Cut bases off the start of a read, if below a threshold quality</li>
+<li>TRAILING: Cut bases off the end of a read, if below a threshold quality</li>
+<li>CROP: Cut the read to a specified length</li>
+<li>HEADCROP: Cut the specified number of bases from the start of the read</li>
+<li>MINLEN: Drop the read if it is below a specified length</li>
+<li>TOPHRED33: Convert quality scores to Phred-33</li>
+<li>TOPHRED64: Convert quality scores to Phred-64</li>
+</ul>
+<p>The configuration changes depending on whether the sequences are single end or paired-end.</p>
+<p>You can find more detailed descriptions of their functions in the <a href="http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/TrimmomaticManual_V0.32.pdf">manual</a>.</p>
+<p>Let’s see how it works. The software is already installed on the docker container.</p>
+<p>Let’s go back to the folder where our fastq files are.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">cd</span> ../..</code></pre></div>
+<p>The quality of our test sequences is quite good, but we saw that the quality low at the 3 ‘end, as well as the disproportionate presence of bases at the end 5’. Let’s clean our sequences using Trimmomatic.</p>
+<p>We will ask Trimmomatic to cut:</p>
+<ul>
+<li>The Illumina TruSeq single end (SE) adapters from the 3 ’end</li>
+<li>The first 10 nucleotides of the 5’ end</li>
+<li>Bases of poor quality using a window of 4 nucleotides with a minimum average of Phred of 15</li>
+<li>Sequences less than 60 nucleotides.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">trimmomatic</span> SE Partial_SRR2467141.fastq Trimmed_Partial_SRR2467141.fastq ILLUMINACLIP:TruSeq3-SE.fa:2:30:10 HEADCROP:10 SLIDINGWINDOW:4:15 MINLEN:60</code></pre></div>
+<pre class="output"><code>Automatically using 1 threads
+java.io.FileNotFoundException: /home/sfernandez/TRANSCRIPTOMICA/FastQC_Short/TruSeq3-SE.fa (No such file or directory)
+    at java.io.FileInputStream.open0(Native Method)
+    at java.io.FileInputStream.open(FileInputStream.java:195)
+    at java.io.FileInputStream.&lt;init&gt;(FileInputStream.java:138)
+    at org.usadellab.trimmomatic.fasta.FastaParser.parse(FastaParser.java:54)
+    at org.usadellab.trimmomatic.trim.IlluminaClippingTrimmer.loadSequences(IlluminaClippingTrimmer.java:110)
+    at org.usadellab.trimmomatic.trim.IlluminaClippingTrimmer.makeIlluminaClippingTrimmer(IlluminaClippingTrimmer.java:71)
+    at org.usadellab.trimmomatic.trim.TrimmerFactory.makeTrimmer(TrimmerFactory.java:32)
+    at org.usadellab.trimmomatic.Trimmomatic.createTrimmers(Trimmomatic.java:59)
+    at org.usadellab.trimmomatic.TrimmomaticSE.run(TrimmomaticSE.java:303)
+    at org.usadellab.trimmomatic.Trimmomatic.main(Trimmomatic.java:85)
+Quality encoding detected as phred33
+Input Reads: 5000 Surviving: 4856 (97.12%) Dropped: 144 (2.88%)
+TrimmomaticSE: Completed successfully</code></pre>
+<p>We can see that there were very few sequences that were discarded but still are things that could have affected our analysis and/or assembly. We also see that there is an error:</p>
+<pre class="output"><code>java.io.FileNotFoundException: /home/sfernandez/CLASS_TEST/FastQC_Short/TruSeq3-SE.fa (No such file or directory)</code></pre>
+<p>This is because the sequences of the adapters are not in the same directory as our data. One way to compensate for this is to download the necessary files (these files are provided with trimmomatic but we will download them as we are working on the server)</p>
+<p>Download this file and run Trimmomatic again:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">wget</span> https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-SE.fa</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">trimmomatic</span> SE Partial_SRR2467141.fastq Trimmed_Partial_SRR2467141.fastq ILLUMINACLIP:TruSeq3-SE.fa:2:30:10 HEADCROP:10 SLIDINGWINDOW:4:15 MINLEN:60</code></pre></div>
+<pre class="output"><code>Automatically using 1 threads
+Using Long Clipping Sequence: &#39;AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGTA&#39;
+Using Long Clipping Sequence: &#39;AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC&#39;
+ILLUMINACLIP: Using 0 prefix pairs, 2 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Quality encoding detected as phred33
+Input Reads: 5000 Surviving: 4847 (96.94%) Dropped: 153 (3.06%)
+TrimmomaticSE: Completed successfully</code></pre>
+<p>This result shows us that the program was executed properly and eliminated sequences which contain the adapters that we indicate. Comparing with our previous results we see that it found 9 sequences with these adapters.</p>
+<p>If we use the command <code>ls</code> we can see that a result file called <code>Trimmed_Partial_SRR2467141.fastq</code>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">ls</span></code></pre></div>
+<pre class="output"><code>Partial_SRR2467141.fastq
+Partial_SRR2467142.fastq
+Partial_SRR2467143.fastq
+Partial_SRR2467144.fastq
+Partial_SRR2467145.fastq
+Partial_SRR2467146.fastq
+Partial_SRR2467147.fastq
+Partial_SRR2467148.fastq
+Partial_SRR2467149.fastq
+Partial_SRR2467150.fastq
+Partial_SRR2467151.fastq
+QUAL
+**Trimmed_Partial_SRR2467141.fastq**
+TruSeq3-SE.fa</code></pre>
+<p>Let’s now review the results of our sequence cleaning. First we will see the first lines of the clean file.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">head</span> -n 12 Trimmed_Partial_SRR2467141.fastq</code></pre></div>
+<pre class="output"><code>@SRR2467141.1 SALLY:472:C6NCDACXX:8:1101:1392:1873 length=101
+TCGTTCTTCTTGAAGAAGACGTTACCTACGGCGTATTTGCCCATCTCAGGTATGTCTAGATCAAGATCTAACTTGAATTCTCTTTTCATAA
++SRR2467141.1 SALLY:472:C6NCDACXX:8:1101:1392:1873 length=101
+HB?&lt;?CFGGGC9@FF@GGGG&gt;EEEDGDHGFHGE;AEFH&gt;AC@D;@B&gt;C&gt;CCC@C&gt;&gt;DDCC3:&gt;AA5&gt;CC&gt;&gt;CCD&gt;@CCDCDCCCCC@C@&gt;C
+@SRR2467141.2 SALLY:472:C6NCDACXX:8:1101:1326:1950 length=101
+CTGGCCAAATGCCCCATTATTTTGAGTATTGTTATTTCCAAATAAACTGTTACTATTACTGCCAGCGGCAGAAGTGAATCCACAGATC
++SRR2467141.2 SALLY:472:C6NCDACXX:8:1101:1326:1950 length=101
+FH?GEHEHIDEHCCFEHIE@GIGCHG&lt;DGGIHIGIGGIGHIIFIHFFGDHGGIIHIGIIIIGGEH@EADB&gt;=AA&gt;3@&gt;CCCCCCBC@C
+@SRR2467141.3 SALLY:472:C6NCDACXX:8:1101:1477:1959 length=101
+TTAGGCACATCATCCTGATAAGTGTACTTACCAGGATATATACCATCGGTATTGATGTTATCGGCATCACATAAAACTAATTCACCAGAAA
++SRR2467141.3 SALLY:472:C6NCDACXX:8:1101:1477:1959 length=101
+HHHJJJIIJJIJJJJJJEIJJJIIJJJIJIJJIJJIIIJJJIIIHIIIJDHIJJIGJJIJJJJJIHHHFFFFFEEEEEEDDEDDDDDDDDD</code></pre>
+<p>We can see that even in the first lines cuts were made, mostly in the 3’ end.</p>
+<p>Let’s now review the global results using FastQC:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">$ <span class="kw">fastqc</span> -O ./QUAL/ Trimmed_Partial_SRR2467141.fastq </code></pre></div>
+<pre class="output"><code>Started analysis of Trimmed_Partial_SRR2467141.fastq
+Approx 20% complete for Trimmed_Partial_SRR2467141.fastq
+Approx 40% complete for Trimmed_Partial_SRR2467141.fastq
+Approx 60% complete for Trimmed_Partial_SRR2467141.fastq
+Approx 80% complete for Trimmed_Partial_SRR2467141.fastq
+Analysis complete for Trimmed_Partial_SRR2467141.fastq</code></pre>
+<p>Open the html result <a href="http://liz-fernandez.github.io/transcriptome_analysis/Trimmed_Partial_SRR2467141_fastqc.html">Trimmed_Partial_SRR2467141_fastqc.html</a>.</p>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="what-are-the-differences-between-raw-and-clean-sequences"><span class="glyphicon glyphicon-pencil"></span>What are the differences between raw and clean sequences?</h2>
+</div>
+<div class="panel-body">
+<p>Compare html files between raw and clean sequences. Summarizes: What differences are there? What do you think is the cause of these differences?</p>
+</div>
+</section>
+<section class="challenge panel panel-success">
+<div class="panel-heading">
+<h2 id="exercise---quality-analysis"><span class="glyphicon glyphicon-pencil"></span>Exercise - Quality analysis</h2>
+</div>
+<div class="panel-body">
+<p>Perform a quality analysis and cut by Trimmomatic of each of the files fastq in the directory that we decompressed.</p>
+</div>
+</section>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="mailto:selene.fernandez.valverde@gmail.com">Contacto</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">Licencia</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+    <script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+  </body>
+</html>
