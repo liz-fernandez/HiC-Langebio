@@ -135,8 +135,10 @@ Now let's visualize the TADs.
 hicPlotTADs --tracks hic_tads.ini -o ZmMC_50k_tads.png --region 2:122000000-126000000
 ```
 
+
 Challenge: 
-  - Call TADs for the ZmEn matrix, and make a plot with both matrices and tads
+  - Call TADs for the ZmEn matrix, and make a plot with both matrices and tads.
+  - Try other parameters and / or resolutions.
 
 
 ## Peaks
@@ -156,12 +158,9 @@ We can plot the matrix with annotated loops.
 hicPlotMatrix -m ZmMC_50k_corrected.cool -o ZmMC_50k_loops.png --log1p --region 2:110000000-114000000 --loops ZmMC_50k_loops.bedgraph
 ```
 
-To get an idea of the quality of the callset, besides plotting the annotated matrix we can also produce a plot showing the average of all the called peaks. 
+Challenge: 
+  - Look at other loop regions 
 
-
-```bash
-hicAggregateContacts --matrix  ZmMC_50k_corrected.cool --BED ZmMC_50k_loops.bedgraph --outFileName ZmMC_HiC_peaks.png --vMin 0.8 --vMax 2.2 --range 300000:1000000 --numberOfBins 30 --chromosomes 2 --avgType mean --transform obs/exp
-```
 
 In the maize Dong et al. paper, they call peaks using HiCCUPs. 
 
