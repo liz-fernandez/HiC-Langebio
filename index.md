@@ -32,16 +32,18 @@ Link to exp protocol PDF
 ### Bioinformatics Syllabus
 
 1. Introduction to next generation sequencing techniques and HiC data. 
-	* [Lecture]()
+	* [Lecture](SLIDES/01_HiCWorkshop_Intro_to_NGS.pdf)
 2. Quality control of HiC data.
+	* [Lecture](SLIDES/01_lecture_mapping_filtering.pdf)
 	* [Practical](01-quality.html)
 3. HiC read alignment
 	* [Practical](03-hicup.html)
-5. HiC Matrix construction and correction
+4. HiC Matrix construction and correction
+	* [Lecture](SLIDES/02_lecture_matrix_binning_correction.pdf)
 	* [Practical](04-matrix.html)
-8. HiC Data formats and visualization
+5. HiC Data formats and visualization
 	* [Practical](05-visualization.html)
-9. Compartment Analysis
+6. Compartment Analysis
 	* [Practical](06-feature_calling.html)
 	
 <!--
