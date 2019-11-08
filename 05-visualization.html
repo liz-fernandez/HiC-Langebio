@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>HiC Workshop: Theoretical and Practical HiC Workshop</title>
+    <title>HiC Workshop: Matrix Visualization</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,19 +26,12 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">Theoretical and Practical HiC Workshop</h1></a>
-          <h2 class="subtitle">Matrix Visualization</h2>
-          <section class="objectives panel panel-warning">
-<div class="panel-heading">
-<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
-</div>
-<div class="panel-body">
+                    <h1 class="title">Matrix Visualization</h1>
+          <h2 id="learning-objectives">Learning objectives</h2>
 <ul>
 <li>Use juicebox to visualize a HiC matrix</li>
 <li>Use HiCExplorer to generate images of a matrix slice</li>
 </ul>
-</div>
-</section>
 <h2 id="juicebox-interactive-visualization">Juicebox interactive visualization</h2>
 <p>A common visualization task for HiC data is to interactively explore the matrix for quality control purposes, to generate hypothesis or to confirm expected interaction patterns.</p>
 <p>For the first part of the practical, we are using the juicebox browser interactively.</p>
@@ -57,9 +50,9 @@
 <p>Another visualization approach is to include a command in a script that automatically generates figures. This is useful for generating reproducible workflows.</p>
 <p>We will use the HiCexplorer command line tools for this purpose.</p>
 <p>First, let’s plot a square matrix. This might be useful to explore large regions. Let’s take a look at the whole chromosome.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_corrected.png</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --perChromosome --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_corrected.png</code></pre></div>
 <p>Now let’s try the same plot, but on a log scale.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --log1p --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_log.png </code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --perChromosome --log1p --matrix ZmMC_500k_corrected.cool --outFileName ZmMC_500k_log.png </code></pre></div>
 <p>Now open both plots and compare.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">open</span> full_matrix_log.png
 <span class="kw">open</span> full_matrix.png</code></pre></div>
@@ -67,7 +60,7 @@
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --log1p --region 2:125000000-130000000 --matrix ZmMC_50k_corrected.cool --outFileName ZmMC_50k_region_log.png</code></pre></div>
 <p>We can compare differences between our conditions by plotting a difference matrix.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicCompareMatrices</span> --operation log2ratio --matrices ZmMC_500k_corrected.cool ZmEn_500k_corrected.cool --outFileName ZmMC_ZmEn_500k_log2.cool</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --matrix ZmMC_ZmEn_500k_log2.cool --outFileName ZmMC_ZmEn_500k_log2.png</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotMatrix</span> --perChromosome --matrix ZmMC_ZmEn_500k_log2.cool --outFileName ZmMC_ZmEn_500k_log2.png</code></pre></div>
 <p>Another approach is to plot the upper triangle of the diagonal. This is particularly useful to plot the matrix alongside with other data tracks.</p>
 <p>The hicPlotTADs function requires a track configuration file like the following one:</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash">[<span class="kw">hic</span> matrix]
@@ -76,6 +69,7 @@
 <span class="kw">transform</span> = log1p
 <span class="kw">file_type</span> = hic_matrix
 <span class="kw">depth</span> = 300000</code></pre></div>
+<p>Copy and paste the configuration file above and save it as “hic_track.ini”. You can use the nano editor for this.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicPlotTADs</span> --tracks hic_track.ini --region 2:127000000-128000000 -out ZmMC_10k_horiz_mat.png</code></pre></div>
         </div>
       </div>

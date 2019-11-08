@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>HiC Workshop: Theoretical and Practical HiC Workshop</title>
+    <title>HiC Workshop: Generating a HiC matrix</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,19 +26,12 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">Theoretical and Practical HiC Workshop</h1></a>
-          <h2 class="subtitle">Generating a HiC matrix</h2>
-          <section class="objectives panel panel-warning">
-<div class="panel-heading">
-<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
-</div>
-<div class="panel-body">
+                    <h1 class="title">Generating a HiC matrix</h1>
+          <h2 id="learning-objectives" class="objectives">Learning objectives</h2>
 <ul>
 <li>Use juicer tools to obtain a multi resolution hic matrix (for juicebox visualization)</li>
 <li>Use cooler to obtain a multi resolution hic matrix (for HiCexplorer and HiGlass)</li>
 </ul>
-</div>
-</section>
 <h2 id="hic-.pairs-data-format">HiC .pairs data format</h2>
 <p>In this section we will use our filtered hic read pairs in bam format, and convert it to a data format commonly used by downstream HiC analysis tools.</p>
 <p>First, we will obtain a .pairs format.</p>
@@ -60,6 +53,8 @@
 <p>HiC data is often quite large, which means that it is not very efficient to work directly with plain text files. Tools for compression and indexing are available for the .pairs format. Some downstream analysis tools accept compressed and indexed files, which makes storage and access easier.</p>
 <p>You can read more about the specification and supporting tools here: https://github.com/4dn-dcic/pairix/blob/master/pairs_format_specification.md</p>
 <p>We will use the bam2pairs command to obtain a .pairs file.</p>
+<p>First, let’s generate the chr_file.txt</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">echo</span> -e 2:120000001-132000000<span class="st">&quot;\t&quot;</span>12000000  <span class="kw">&gt;</span> chr_file.txt</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">bam2pairs</span> -l -c chr_file.txt ZmEn_HiC_2_1_2.hicup.bam ZmEn_HiC_2_1_2.hicup</code></pre></div>
 <p>Let’s see how the .pairs format looks like:</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">head</span> ZmEn_HiC_2_1_2.hicup.bsorted.pairs</code></pre></div>
@@ -82,6 +77,8 @@
 <p>https://liorpachter.wordpress.com/2013/11/17/imakaev_explained/</p>
 <p>In this practical we are interested in comparing four matrices: ZmEn_1, ZmEn_2, ZmMC_1 and ZmMC_2. When comparing matrices, first we must account for differences in sequencing depth between experiments.</p>
 <p>We will use hicExplorer to achieve this. The hicNormalize function will adjust the matrices so the toal sum is equal to the matrix with lower sequencing depth.</p>
+<p>To activate hicExplorer, let’s run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">conda</span> activate python36</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicNormalize</span> --matrices ZmEn_1_10k.cool ZmEn_2_10k.cool ZmMC_1_10k.cool ZmMC_2_10k.cool --normalize smallest -o ZmEn_1_10k_norm.cool ZmEn_2_10k_norm.cool ZmMC_1_10k_norm.cool ZmMC_2_10k_norm.cool</code></pre></div>
 <p>Bin level filtering is necesary to remove low count bins. An approach is the “MAD-max” filter. To decide filtering values for this filter we can run a diagnostic plot of a histogram of counts per bin, together with the MAD statistic.</p>
 <div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">hicCorrectMatrix</span> diagnostic_plot --matrix ZmEn_1_10k_norm.cool -o ZmEn_1_diagnostic_10kb.png</code></pre></div>

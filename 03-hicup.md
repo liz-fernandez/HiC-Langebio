@@ -1,16 +1,17 @@
 ---
-layout: page
-title: Theoretical and Practical HiC Workshop
-subtitle: HiC alignment strategies
-minutes: 5
+title: "HiC alignment strategies"
+output: 
+  html_document:
+    keep_md: true
 ---
 
 
-> ## Learning objectives {.objectives}
-> * Generate the genome index for mapping
-> * Generate a restriction fragment digested genome file 
-> * Run HiCUP truncator to truncate the 3' part of reads after the ligation motif
-> * Run HiCUP 
+
+## Learning objectives  
+- Setting up genome files 
+- Run HiCUP steps and inspect the output 
+- Interpret the HiCUP report
+
 
 
 ## Setting up the genome files
@@ -20,41 +21,41 @@ In order to run HiCUP to map and filter HiC reads, two files must be generated: 
 First we generate a bowtie2 index for the genome.
 
 
-~~~ {.bash}
+```bash
 bowtie2-build --threads 1 maize_mini2.fa maize_mini2
-~~~
+```
 
 Then we use HiCUP digester to generate an *in silico* digested genome file. 
 - --re1 is the restriction enzyme used in the procol. The restriction site, as well as the cut site (with ^) must be indicated. 
 - --genome is the name of the genome for the output file (optional)
 
 
-~~~ {.bash}
+```bash
 hicup_digester --re1 ^GATC,DpnII --genome maize_mini2 maize_mini2.fa
-~~~
+```
 
 Let's inspect the Digested file.
 
 
-~~~ {.bash}
+```bash
 head Digest_maize_mini2_DpnII_None_17-05-28_30-10-2019.txt
-~~~
+```
 
 ## HiCUP truncater 
 
 The next step is to truncate the sequence downstream of a ligation site of the read.
 
 
-~~~ {.bash}
+```bash
 hicup_truncater --re1 ^GATC,DpnII ZmEn_HiC_sub_1.fq.gz  ZmEn_HiC_sub_2.fq.gz
-~~~
+```
 
 Let's inspect the truncation results.
 
 
-~~~ {.bash}
+```bash
 less hicup_truncater_summary_wJYYjDJNrR_18-03-50_26-10-2019.txt
-~~~
+```
 
 We expect a higher percentage of truncated reads with longer reads (~150 nts).
 Another factor is the distribution of restriction fragment lengths.
@@ -68,34 +69,34 @@ The next step is to map the read pairs to the reference genome.
 Forward and reverse reads are mapped independently, and then the resulting alignments are paired again to produce a paired end bam.
 
 
-~~~ {.bash}
+```bash
 hicup_mapper --threads 1 --bowtie2 /data/software/bowtie2-2.3.5.1-linux-x86_64/bowtie2 --index maize_mini2 ZmEn_HiC_sub_1.trunc.fastq ZmEn_HiC_sub_2.trunc.fastq
-~~~
+```
 
 We can inspect how many read pairs were correctly mapped in the hicup_mapper_summary file.
 
 
-~~~ {.bash}
+```bash
 head hicup_mapper_summary_cKQMtNGDIb_18-27-31_26-10-2019.txt 
-~~~
+```
 
 ## HiCUP filter
 
 After mapping, the resulting SAM file is parsed to filter out uninformative read pairs. 
 
 
-~~~ {.bash}
+```bash
 hicup_filter --digest Digest_maize_mini2_DpnII_None_02-07-29_01-11-2019.txt ZmEn_HiC_sub_1_2.pair.sam --longest 800 --shortest 150
-~~~
+```
 
 ## HiCUP deduplicater
 
 The final step of the workflow is to remove read pair duplicates. Duplicates may arise during the PCR protocol or in the sequencing step (optical duplicates). Removing duplicates is done by comparing the start and end coordinates of both reads of a read pair.
 
 
-~~~ {.bash}
+```bash
 hicup_deduplicator --zip ZmEn_HiC_sub_1_2.filt.sam
-~~~
+```
 
 ## Run whole HiCUP pipeline 
 
@@ -104,7 +105,7 @@ An useful feature of HiCUP is that it can be run as a complete pipeline, produci
 To do this we setup a configuration file:
 
 
-~~~ {.bash}
+```bash
 #Example configuration file for the hicup Perl script - edit as required
 ########################################################################
 
@@ -152,18 +153,27 @@ Shortest: 100
 #FASTQ files to be analysed, placing paired files on adjacent lines
 ZmEn_HiC_sub_1.fq.gz
 ZmEn_HiC_sub_2.fq.gz
-~~~
+```
 
 
-~~~ {.bash}
+```bash
 hicup --config hicup_config.txt
-~~~
+```
 
 Finally let's inspect the html output.
 
 
-~~~ {.bash}
+```bash
 open ZmMC_HiC_2.1.10_sub_1_2.HiCUP_summary_report.html
-~~~
+```
 
+For further information about HiCUP about you can access the following resources: 
 
+HiCUP documentation
+https://www.bioinformatics.babraham.ac.uk/projects/hicup/read_the_docs/html/index.html
+
+Video explainer of HiCUP reports
+https://www.youtube.com/watch?v=xWpjlXnsOU4
+
+HiCUP publication
+https://www.ncbi.nlm.nih.gov/pubmed/26835000

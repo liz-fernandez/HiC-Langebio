@@ -37,21 +37,18 @@ Link to exp protocol PDF
 	* [Practical](01-quality.html)
 3. HiC read alignment
 	* [Practical](03-hicup.html)
-
-	
-
-<!--
 5. HiC Matrix construction and correction
 	* [Practical](04-matrix.html)
 8. HiC Data formats and visualization
 	* [Practical](05-visualization.html)
 9. Compartment Analysis
 	* [Practical](06-feature_calling.html)
+	
+<!--
 10. Peak calling 
 	* [Practical](08-peaks.html)
 11. Differential interactions
 	* [Practical](09-diffinteractions.html)
-
 --> 
 
 
