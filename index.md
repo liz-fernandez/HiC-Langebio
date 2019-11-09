@@ -45,13 +45,9 @@ Link to exp protocol PDF
 	* [Practical](05-visualization.html)
 6. Compartment Analysis
 	* [Practical](06-feature_calling.html)
+7. Differential interactions
+	* [Practical](07_diffhic.html)
 	
-<!--
-10. Peak calling 
-	* [Practical](08-peaks.html)
-11. Differential interactions
-	* [Practical](09-diffinteractions.html)
---> 
 
 
 
