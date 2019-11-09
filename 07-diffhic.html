@@ -160,7 +160,9 @@ input</code></pre></div>
 ##   [28909] 2:120000001-132000000 11950034-12000000      * |       178
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
-<p>Each row is an interaction, each column is a library. Each bin has <em>nfrags</em> fragments. <strong>Note:</strong> The boundary of each bin is rounded to the closest restriction site.</p>
+<p>Each row is an interaction, each column is a library.<br />
+Each bin has <em>nfrags</em> fragments.<br />
+<strong>Note:</strong> The boundary of each bin is rounded to the closest restriction site.</p>
 <p>This object also has a count matrix with the number of read pairs for each interaction, in each library</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(<span class="kw">assay</span>(zm_data))</code></pre></div>
 <pre><code>## [1] 28909     4</code></pre>
@@ -212,14 +214,14 @@ data &lt;-<span class="st"> </span>data[keep, ]</code></pre></div>
 o &lt;-<span class="st"> </span><span class="kw">order</span>(ab)
 adj.counts &lt;-<span class="st"> </span><span class="kw">cpm</span>(<span class="kw">asDGEList</span>(zm_data), <span class="dt">log=</span><span class="ot">TRUE</span>)
 mval &lt;-<span class="st"> </span>adj.counts[,<span class="dv">3</span>]-adj.counts[,<span class="dv">2</span>]
-<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (1) vs MC (2)&quot;</span>)
+<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (2) vs MC (1)&quot;</span>)
 fit &lt;-<span class="st"> </span><span class="kw">loessFit</span>(<span class="dt">x=</span>ab, <span class="dt">y=</span>mval)
 <span class="kw">lines</span>(ab[o], fit$fitted[o], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
 <p><img src="07_diffhic_files/figure-html/unnamed-chunk-18-1.png" /><!-- --></p>
 <p>Perform non-linear normalization</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">zm_data &lt;-<span class="st"> </span><span class="kw">normOffsets</span>(zm_data, <span class="dt">se.out=</span><span class="ot">TRUE</span>)</code></pre></div>
-<p>The matrix of offsets has same dimensions as count matrix and is stored as anelement of assays slot of the InteractionSet object.</p>
-<p>Create object for Matrix of offsets</p>
+<p>The matrix of offsets has same dimensions as count matrix and is stored as an element of assays slot of the InteractionSet object.</p>
+<p>Create object with matrix of offsets</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nb.off &lt;-<span class="st"> </span><span class="kw">assay</span>(zm_data, <span class="st">&quot;offset&quot;</span>)
 <span class="kw">head</span>(nb.off)</code></pre></div>
 <pre><code>##              [,1]      [,2]        [,3]          [,4]
@@ -232,9 +234,9 @@ fit &lt;-<span class="st"> </span><span class="kw">loessFit</span>(<span class="
 <p>Plot after normalization</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ab &lt;-<span class="st"> </span><span class="kw">aveLogCPM</span>(<span class="kw">asDGEList</span>(zm_data))
 o &lt;-<span class="st"> </span><span class="kw">order</span>(ab)
-adj.counts &lt;-<span class="st"> </span><span class="kw">cpm</span>(<span class="kw">asDGEList</span>(zm_data), <span class="dt">log=</span><span class="ot">TRUE</span>)
+adj.counts &lt;-<span class="st"> </span><span class="kw">cpm</span>(<span class="kw">log2</span>(<span class="kw">assay</span>(zm_data) +<span class="st"> </span><span class="fl">0.5</span>) -<span class="st"> </span>nb.off/<span class="kw">log</span>(<span class="dv">2</span>))
 mval &lt;-<span class="st"> </span>adj.counts[,<span class="dv">3</span>]-adj.counts[,<span class="dv">2</span>]
-<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (1) vs MC (2) afterNLN&quot;</span>)
+<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (2) vs MC (1) after NLN&quot;</span>)
 fit &lt;-<span class="st"> </span><span class="kw">loessFit</span>(<span class="dt">x=</span>ab, <span class="dt">y=</span>mval)
 <span class="kw">lines</span>(ab[o], fit$fitted[o], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
 <p><img src="07_diffhic_files/figure-html/unnamed-chunk-21-1.png" /><!-- --></p>
@@ -289,8 +291,7 @@ y$common.dispersion</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plotBCV</span>(y)</code></pre></div>
 <p><img src="07_diffhic_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
 <p>Estimate QL dispersion<br />
-Estimation of QL dispersion is performed to model variability of the dispersions.<br />
-<strong>Note:</strong> robust=TRUE protect EB shrinkage against positive outliers (highly variable counts).</p>
+Estimation of QL dispersion is performed to model variability of the dispersions. <strong>Note:</strong> robust=TRUE protect EB shrinkage against positive outliers (highly variable counts).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(statmod)
 fit &lt;-<span class="st"> </span><span class="kw">glmQLFit</span>(y, design, <span class="dt">robust=</span><span class="ot">TRUE</span>)
 <span class="kw">plotQLDisp</span>(fit)
@@ -322,7 +323,7 @@ fit &lt;-<span class="st"> </span><span class="kw">glmQLFit</span>(y, design, <s
 debins &lt;-<span class="st"> </span><span class="kw">rownames</span>(result)[<span class="kw">as.logical</span>(de)]
 <span class="kw">plotSmear</span>(result, <span class="dt">de.tags=</span>debins)</code></pre></div>
 <p><img src="07_diffhic_files/figure-html/unnamed-chunk-27-1.png" /><!-- --></p>
-<p>Clustering based on significant bin pairs</p>
+<h3 id="clustering-based-on-significant-bin-pairs">Clustering based on significant bin pairs</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clustered.sig &lt;-<span class="st"> </span><span class="kw">diClusters</span>(zm_data, result$table, <span class="dt">target=</span><span class="fl">0.05</span>, <span class="dt">cluster.args=</span><span class="kw">list</span>(<span class="dt">tol=</span><span class="dv">1</span>))
 <span class="kw">length</span>(clustered.sig$interactions)</code></pre></div>
 <pre><code>## [1] 36</code></pre>
@@ -349,7 +350,8 @@ debins &lt;-<span class="st"> </span><span class="kw">rownames</span>(result)[<s
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clustered.sig$FDR</code></pre></div>
 <pre><code>## [1] 0.02777778</code></pre>
-<p>Create objects for bin pairs identities Combine Test combines p-values</p>
+<p>Create objects for bin pairs identities<br />
+‘combineTest’ combines p-values</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tabcomdata &lt;-<span class="st"> </span><span class="kw">combineTests</span>(clustered.sig$indices[[<span class="dv">1</span>]], result$table)
 <span class="kw">head</span>(tabcomdata)</code></pre></div>
 <pre><code>## DataFrame with 6 rows and 6 columns
