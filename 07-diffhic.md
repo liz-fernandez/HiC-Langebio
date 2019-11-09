@@ -139,7 +139,7 @@ input
 ## [1] "En1_Zm.h5" "En2_Zm.h5" "MC1_Zm.h5" "MC2_Zm.h5"
 ```
   
-##2. COUNTING READS INTO BINS
+## 2. COUNTING READS INTO BINS
 
 First we will indicate the size (in base pairs) of our bin
 
@@ -216,9 +216,9 @@ head(anchors(zm_data))
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths
 ```
-Each row is an interaction, each column is a library. 
-Each bin has _nfrags_ fragments.
-**Note:** The boundary of each bin is rounded to the closest restriction site.
+Each row is an interaction, each column is a library.   
+Each bin has _nfrags_ fragments.  
+**Note:** The boundary of each bin is rounded to the closest restriction site.  
   
 This object also has a count matrix with the number of read pairs for each interaction, in each library
 
@@ -322,7 +322,7 @@ ab <- aveLogCPM(asDGEList(zm_data))
 o <- order(ab)
 adj.counts <- cpm(asDGEList(zm_data), log=TRUE)
 mval <- adj.counts[,3]-adj.counts[,2]
-smoothScatter(ab, mval, xlab="A", ylab="M", main="En (1) vs MC (2)")
+smoothScatter(ab, mval, xlab="A", ylab="M", main="En (2) vs MC (1)")
 fit <- loessFit(x=ab, y=mval)
 lines(ab[o], fit$fitted[o], col="red")
 ```
@@ -335,9 +335,9 @@ Perform non-linear normalization
 zm_data <- normOffsets(zm_data, se.out=TRUE)
 ```
 
-The matrix of offsets has same dimensions as count matrix  and is stored as anelement of assays slot of the InteractionSet object.   
+The matrix of offsets has same dimensions as count matrix  and is stored as an element of assays slot of the InteractionSet object.   
   
-Create object for Matrix of offsets
+Create object with matrix of offsets
 
 ```r
 nb.off <- assay(zm_data, "offset")
@@ -359,9 +359,9 @@ Plot after normalization
 ```r
 ab <- aveLogCPM(asDGEList(zm_data))
 o <- order(ab)
-adj.counts <- cpm(asDGEList(zm_data), log=TRUE)
+adj.counts <- cpm(log2(assay(zm_data) + 0.5) - nb.off/log(2))
 mval <- adj.counts[,3]-adj.counts[,2]
-smoothScatter(ab, mval, xlab="A", ylab="M", main="En (1) vs MC (2) afterNLN")
+smoothScatter(ab, mval, xlab="A", ylab="M", main="En (2) vs MC (1) after NLN")
 fit <- loessFit(x=ab, y=mval)
 lines(ab[o], fit$fitted[o], col="red")
 ```
@@ -373,7 +373,7 @@ lines(ab[o], fit$fitted[o], col="red")
 The NB model also consider extra-Poisson variability between biological replicates of the same conditon.  
 Variability is modelled by estimating the dispersion parameter of the NB distribution  
   
-Specify design matrix to describe the experimental setup
+Specify design matrix to describe the experimental setup  
 
 ```r
 design <- model.matrix(~factor(c("En", "En", "MC", "MC")))
@@ -445,7 +445,7 @@ plotBCV(y)
 ![](07_diffhic_files/figure-html/unnamed-chunk-23-1.png)<!-- -->
   
 Estimate QL dispersion  
-Estimation of QL dispersion is performed to model variability of the dispersions.  
+Estimation of QL dispersion is performed to model variability of the dispersions.
 **Note:** robust=TRUE protect EB shrinkage against positive outliers (highly variable counts).
 
 ```r
@@ -507,7 +507,7 @@ plotSmear(result, de.tags=debins)
 
 ![](07_diffhic_files/figure-html/unnamed-chunk-27-1.png)<!-- -->
   
-Clustering based on significant bin pairs
+### Clustering based on significant bin pairs
 
 ```r
 clustered.sig <- diClusters(zm_data, result$table, target=0.05, cluster.args=list(tol=1))
@@ -553,8 +553,8 @@ clustered.sig$FDR
 ## [1] 0.02777778
 ```
   
-Create objects for bin pairs identities
-Combine Test combines p-values
+Create objects for bin pairs identities  
+'combineTest' combines p-values
 
 ```r
 tabcomdata <- combineTests(clustered.sig$indices[[1]], result$table)
