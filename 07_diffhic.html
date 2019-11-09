@@ -29,20 +29,19 @@
                     <h1 class="title">Calling genome-wide differential interactions</h1>
           <h2 id="learning-objectives">Learning objectives</h2>
 <p>We will use diffHic to:<br />
-- Count the read pairs into bins to measure interaction intensity<br />
-- Filter our data to remove uninteresting bin pairs<br />
+- Count the read pairs into bins and filter uninteresting bin pairs<br />
 - Normalize our libraries to account for different biases<br />
 - Estimate biological variability of the replicates<br />
 - Obtain our list of differential interactions (DI)</p>
 <h2 id="getting-hicup-mapped-data-into-diffhic">1. Getting HiCUP-mapped data into diffhic</h2>
-<p>Enter the docker container</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> run -i -t lizfernandez/hic-langebio:tag /bin/bash
-<span class="co">#or</span>
-<span class="kw">docker</span> run </code></pre></div>
-<p>Bam files need to be sorted:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">for</span> <span class="kw">f</span> in *.bam <span class="kw">;</span> <span class="kw">do</span> <span class="ot">file=</span><span class="st">&quot;</span><span class="ot">${f%%</span>.*<span class="ot">}</span><span class="st">&quot;</span>; <span class="kw">samtools</span> sort -n <span class="ot">$f</span> <span class="kw">&gt;</span>  <span class="ot">${file}</span>.hicup.sorted.bam <span class="kw">;</span> <span class="kw">done</span></code></pre></div>
-<p>Copy these bam files as well as de digested genome in your host</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#In your shell outside of docker:</span>
+<p>Copy the sorted bam files and the digested genome in your host:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">scp</span> lbc@10.10.30.15:/Users/lbc/prac7_data.tar.gz .
+<span class="kw">tar</span> xvzf prac7_data.tar.gz <span class="co">#uncompress</span></code></pre></div>
+<p>If you don´t have terminal you first need to enter the docker container:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">docker</span> run -i -t lizfernandez/hic-langebio:your_tag /bin/bash
+<span class="kw">scp</span> lbc@10.10.30.15:/Users/lbc/prac7_data.tar.gz .
+<span class="kw">tar</span> xvzf prac7_data.tar.gz#uncompress
+<span class="co">#In your shell outside of docker:</span>
 <span class="kw">docker</span> cp <span class="kw">&lt;</span>containerId<span class="kw">&gt;</span>:/path/file /your/path/</code></pre></div>
 <h3 id="working-on-rstudio">Working on RStudio:</h3>
 <p>Set your working directory to where your files are</p>
@@ -51,73 +50,21 @@
 <span class="co"># or do: session &gt; set working directory &gt; choose directory</span></code></pre></div>
 <p>Install the required packages</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">Packages &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;diffHic&quot;</span>,<span class="st">&quot;csaw&quot;</span>, <span class="st">&quot;edgeR&quot;</span>, <span class="st">&quot;GenomicRanges&quot;</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">BiocManager::<span class="kw">install</span>(Packages)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install biocmanager</span>
+if (!<span class="kw">requireNamespace</span>(<span class="st">&quot;BiocManager&quot;</span>, <span class="dt">quietly =</span> <span class="ot">TRUE</span>))
+    <span class="kw">install.packages</span>(<span class="st">&quot;BiocManager&quot;</span>)
+BiocManager::<span class="kw">install</span>()
+
+<span class="co">#bioconductor libraries</span>
+BiocManager::<span class="kw">install</span>(Packages)
+
+<span class="co">#statmod</span>
 <span class="kw">install.packages</span>(<span class="st">&quot;statmod&quot;</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lapply</span>(Packages, library, <span class="dt">character.only=</span>T)</code></pre></div>
-<pre><code>## Loading required package: GenomicRanges</code></pre>
-<pre><code>## Loading required package: stats4</code></pre>
-<pre><code>## Loading required package: BiocGenerics</code></pre>
-<pre><code>## Loading required package: parallel</code></pre>
-<pre><code>## 
-## Attaching package: &#39;BiocGenerics&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:parallel&#39;:
-## 
-##     clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-##     clusterExport, clusterMap, parApply, parCapply, parLapply,
-##     parLapplyLB, parRapply, parSapply, parSapplyLB</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     IQR, mad, sd, var, xtabs</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     anyDuplicated, append, as.data.frame, basename, cbind,
-##     colnames, dirname, do.call, duplicated, eval, evalq, Filter,
-##     Find, get, grep, grepl, intersect, is.unsorted, lapply, Map,
-##     mapply, match, mget, order, paste, pmax, pmax.int, pmin,
-##     pmin.int, Position, rank, rbind, Reduce, rownames, sapply,
-##     setdiff, sort, table, tapply, union, unique, unsplit, which,
-##     which.max, which.min</code></pre>
-<pre><code>## Loading required package: S4Vectors</code></pre>
-<pre><code>## 
-## Attaching package: &#39;S4Vectors&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:base&#39;:
-## 
-##     expand.grid</code></pre>
-<pre><code>## Loading required package: IRanges</code></pre>
-<pre><code>## Loading required package: GenomeInfoDb</code></pre>
-<pre><code>## Loading required package: InteractionSet</code></pre>
-<pre><code>## Loading required package: SummarizedExperiment</code></pre>
-<pre><code>## Loading required package: Biobase</code></pre>
-<pre><code>## Welcome to Bioconductor
-## 
-##     Vignettes contain introductory material; view with
-##     &#39;browseVignettes()&#39;. To cite Bioconductor, see
-##     &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</code></pre>
-<pre><code>## Loading required package: DelayedArray</code></pre>
-<pre><code>## Loading required package: matrixStats</code></pre>
-<pre><code>## 
-## Attaching package: &#39;matrixStats&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:Biobase&#39;:
-## 
-##     anyMissing, rowMedians</code></pre>
-<pre><code>## Loading required package: BiocParallel</code></pre>
-<pre><code>## 
-## Attaching package: &#39;DelayedArray&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:matrixStats&#39;:
-## 
-##     colMaxs, colMins, colRanges, rowMaxs, rowMins, rowRanges</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     aperm, apply, rowsum</code></pre>
-<pre><code>## Loading required package: limma</code></pre>
-<pre><code>## 
-## Attaching package: &#39;limma&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:BiocGenerics&#39;:
-## 
-##     plotMA</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(statmod)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lapply</span>(Packages, library, <span class="dt">character.only=</span>T)
+<span class="kw">library</span>(statmod)</code></pre></div>
 <p>Import HiCUP digest file into R and generate digest genome object</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">digest &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;Digest_maize_mini2_DpnII_None_21-28-22_04-11-2019.txt&quot;</span>, <span class="dt">header=</span>T, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">skip=</span><span class="dv">1</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">digest &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;Digest_maize_mini2_DpnII_None_21-28-22_04-11-2019.txt&quot;</span>, <span class="dt">header=</span>T, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">skip=</span><span class="dv">1</span>) <span class="co">#change name of the file</span>
+
 <span class="co">#The object zm.frag has the digested genome in the diffHic required format</span>
 zm.frag &lt;-<span class="st"> </span><span class="kw">with</span>(digest,<span class="kw">GRanges</span>(Chromosome, <span class="kw">IRanges</span>(Fragment_Start_Position,Fragment_End_Position)))
 <span class="co">#lets look at it</span>
@@ -161,13 +108,13 @@ input</code></pre></div>
 <pre><code>## [1] &quot;En1_Zm.h5&quot; &quot;En2_Zm.h5&quot; &quot;MC1_Zm.h5&quot; &quot;MC2_Zm.h5&quot;</code></pre>
 <h2 id="counting-reads-into-bins">2. COUNTING READS INTO BINS</h2>
 <p>First we will indicate the size (in base pairs) of our bin</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bin.size &lt;-<span class="st"> </span><span class="dv">10000</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bin.size &lt;-<span class="st"> </span><span class="dv">50000</span></code></pre></div>
 <p><code>SquareCounts</code> is the function that counts our read pairs between the pairs of bins, for all of our libraries, using <strong>input</strong>, and will store this information in <strong>zm_data</strong>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  zm_data &lt;-<span class="st"> </span><span class="kw">squareCounts</span>(input, zm.param, <span class="dt">width=</span>bin.size, <span class="dt">filter=</span><span class="dv">1</span>) </code></pre></div>
 <p>Check the structure of <em>zm_data</em>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">zm_data</code></pre></div>
 <pre><code>## class: InteractionSet 
-## dim: 515645 4 
+## dim: 28909 4 
 ## metadata(2): param width
 ## assays(1): counts
 ## rownames: NULL
@@ -175,73 +122,75 @@ input</code></pre></div>
 ## colnames: NULL
 ## colData names(1): totals
 ## type: ReverseStrictGInteractions
-## regions: 1200</code></pre>
+## regions: 240</code></pre>
 <p><em>zm_data</em> contains 515,645 interactions (bin pairs) in all 4 libraries.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">anchors</span>(zm_data))</code></pre></div>
 <pre><code>## $first
-## GRanges object with 515645 ranges and 1 metadata column:
-##                         seqnames            ranges strand |    nfrags
-##                            &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
-##        [1] 2:120000001-132000000           1-10505      * |        43
-##        [2] 2:120000001-132000000       10506-21281      * |        28
-##        [3] 2:120000001-132000000       10506-21281      * |        28
-##        [4] 2:120000001-132000000       21282-30183      * |        34
-##        [5] 2:120000001-132000000       21282-30183      * |        34
-##        ...                   ...               ...    ... .       ...
-##   [515641] 2:120000001-132000000 11989823-12000000      * |        39
-##   [515642] 2:120000001-132000000 11989823-12000000      * |        39
-##   [515643] 2:120000001-132000000 11989823-12000000      * |        39
-##   [515644] 2:120000001-132000000 11989823-12000000      * |        39
-##   [515645] 2:120000001-132000000 11989823-12000000      * |        39
+## GRanges object with 28909 ranges and 1 metadata column:
+##                        seqnames            ranges strand |    nfrags
+##                           &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##       [1] 2:120000001-132000000           1-50246      * |       163
+##       [2] 2:120000001-132000000       50247-99992      * |       169
+##       [3] 2:120000001-132000000       50247-99992      * |       169
+##       [4] 2:120000001-132000000      99993-150558      * |       186
+##       [5] 2:120000001-132000000      99993-150558      * |       186
+##       ...                   ...               ...    ... .       ...
+##   [28905] 2:120000001-132000000 11950034-12000000      * |       178
+##   [28906] 2:120000001-132000000 11950034-12000000      * |       178
+##   [28907] 2:120000001-132000000 11950034-12000000      * |       178
+##   [28908] 2:120000001-132000000 11950034-12000000      * |       178
+##   [28909] 2:120000001-132000000 11950034-12000000      * |       178
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths
 ## 
 ## $second
-## GRanges object with 515645 ranges and 1 metadata column:
-##                         seqnames            ranges strand |    nfrags
-##                            &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
-##        [1] 2:120000001-132000000           1-10505      * |        43
-##        [2] 2:120000001-132000000           1-10505      * |        43
-##        [3] 2:120000001-132000000       10506-21281      * |        28
-##        [4] 2:120000001-132000000           1-10505      * |        43
-##        [5] 2:120000001-132000000       10506-21281      * |        28
-##        ...                   ...               ...    ... .       ...
-##   [515641] 2:120000001-132000000 11950034-11960081      * |        26
-##   [515642] 2:120000001-132000000 11960082-11970341      * |        36
-##   [515643] 2:120000001-132000000 11970342-11980481      * |        41
-##   [515644] 2:120000001-132000000 11980482-11989822      * |        36
-##   [515645] 2:120000001-132000000 11989823-12000000      * |        39
+## GRanges object with 28909 ranges and 1 metadata column:
+##                        seqnames            ranges strand |    nfrags
+##                           &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;integer&gt;
+##       [1] 2:120000001-132000000           1-50246      * |       163
+##       [2] 2:120000001-132000000           1-50246      * |       163
+##       [3] 2:120000001-132000000       50247-99992      * |       169
+##       [4] 2:120000001-132000000           1-50246      * |       163
+##       [5] 2:120000001-132000000       50247-99992      * |       169
+##       ...                   ...               ...    ... .       ...
+##   [28905] 2:120000001-132000000 11750020-11799897      * |       195
+##   [28906] 2:120000001-132000000 11799898-11850047      * |       175
+##   [28907] 2:120000001-132000000 11850048-11900292      * |       191
+##   [28908] 2:120000001-132000000 11900293-11950033      * |       180
+##   [28909] 2:120000001-132000000 11950034-12000000      * |       178
 ##   -------
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
-<p>Each row is an interaction, each column is a library. Each bin has <em>nfrags</em> fragments. <strong>Note:</strong> The boundary of each bin is rounded to the closest restriction site.</p>
+<p>Each row is an interaction, each column is a library.<br />
+Each bin has <em>nfrags</em> fragments.<br />
+<strong>Note:</strong> The boundary of each bin is rounded to the closest restriction site.</p>
 <p>This object also has a count matrix with the number of read pairs for each interaction, in each library</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dim</span>(<span class="kw">assay</span>(zm_data))</code></pre></div>
-<pre><code>## [1] 515645      4</code></pre>
+<pre><code>## [1] 28909     4</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(<span class="kw">assay</span>(zm_data))</code></pre></div>
 <pre><code>##      [,1] [,2] [,3] [,4]
-## [1,]   48   75   61   91
-## [2,]   29   44   54   48
-## [3,]   16   44   43   39
-## [4,]   12   12   17   19
-## [5,]   16   32   27   33
-## [6,]   10   18   22   46</code></pre>
+## [1,]  238  309  383  511
+## [2,]  149  125  179  187
+## [3,]  219  388  290  356
+## [4,]   58   39   61   55
+## [5,]  117  119  122  117
+## [6,]  145  298  224  259</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">zm_data$totals <span class="co"># total read pairs per library</span></code></pre></div>
 <pre><code>## [1] 726265 606426 584113 485457</code></pre>
 <h2 id="filtering-bin-pairs">3. FILTERING BIN PAIRS</h2>
 <p>Visualize the distribution of the average abundance</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ave.ab &lt;-<span class="st"> </span><span class="kw">aveLogCPM</span>(<span class="kw">asDGEList</span>(zm_data))
 <span class="kw">hist</span>(ave.ab, <span class="dt">xlab=</span><span class="st">&quot;Average abundance&quot;</span>, <span class="dt">col=</span><span class="st">&quot;cadetblue3&quot;</span>, <span class="dt">main=</span><span class="st">&quot;Zea mays data before filtering&quot;</span>)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-13-1.png" /><!-- --></p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-14-1.png" /><!-- --></p>
 <p>We filter bin pairs with very low absolute counts</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">count.keep &lt;-<span class="st"> </span>ave.ab &gt;=<span class="st"> </span><span class="kw">aveLogCPM</span>(<span class="dv">2</span>, <span class="dt">lib.size=</span><span class="kw">mean</span>(zm_data$totals))
 <span class="kw">summary</span>(count.keep)</code></pre></div>
 <pre><code>##    Mode   FALSE    TRUE 
-## logical  462732   52913</code></pre>
+## logical     551   28358</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">zm_data_or &lt;-<span class="st"> </span>zm_data <span class="co"># backup the non-filtered data</span>
-zm_data &lt;-<span class="st"> </span>zm_data[count.keep,] <span class="co">#apply the filter</span>
+zm_data &lt;-<span class="st"> </span>zm_data[count.keep,] <span class="co"># apply the filter</span>
 zm_data</code></pre></div>
 <pre><code>## class: InteractionSet 
-## dim: 52913 4 
+## dim: 28358 4 
 ## metadata(2): param width
 ## assays(1): counts
 ## rownames: NULL
@@ -249,11 +198,11 @@ zm_data</code></pre></div>
 ## colnames: NULL
 ## colData names(1): totals
 ## type: ReverseStrictGInteractions
-## regions: 1200</code></pre>
+## regions: 240</code></pre>
 <p>Plot again to check changes</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ave.ab &lt;-<span class="st"> </span><span class="kw">aveLogCPM</span>(<span class="kw">asDGEList</span>(zm_data))
 <span class="kw">hist</span>(ave.ab, <span class="dt">xlab=</span><span class="st">&quot;Average abundance&quot;</span>, <span class="dt">col=</span><span class="st">&quot;blueviolet&quot;</span>, <span class="dt">main=</span><span class="st">&quot;Zea mays data after filtering&quot;</span>)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-15-1.png" /><!-- --></p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-16-1.png" /><!-- --></p>
 <h6 id="other-strategies-apply-when-having-genome-wide-data">Other strategies (apply when having genome-wide data):</h6>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#Retain only those bin pairs with abundances x-times higher than the median abundance across inter-chromosomal bin pairs.</span>
 direct &lt;-<span class="st"> </span><span class="kw">filterDirect</span>(zm_data)
@@ -265,32 +214,32 @@ data &lt;-<span class="st"> </span>data[keep, ]</code></pre></div>
 o &lt;-<span class="st"> </span><span class="kw">order</span>(ab)
 adj.counts &lt;-<span class="st"> </span><span class="kw">cpm</span>(<span class="kw">asDGEList</span>(zm_data), <span class="dt">log=</span><span class="ot">TRUE</span>)
 mval &lt;-<span class="st"> </span>adj.counts[,<span class="dv">3</span>]-adj.counts[,<span class="dv">2</span>]
-<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (1) vs MC (2)&quot;</span>)
+<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (2) vs MC (1)&quot;</span>)
 fit &lt;-<span class="st"> </span><span class="kw">loessFit</span>(<span class="dt">x=</span>ab, <span class="dt">y=</span>mval)
 <span class="kw">lines</span>(ab[o], fit$fitted[o], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-17-1.png" /><!-- --></p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-18-1.png" /><!-- --></p>
 <p>Perform non-linear normalization</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">zm_data &lt;-<span class="st"> </span><span class="kw">normOffsets</span>(zm_data, <span class="dt">se.out=</span><span class="ot">TRUE</span>)</code></pre></div>
-<p>The matrix of offsets has same dimensions as count matrix and is stored as anelement of assays slot of the InteractionSet object.</p>
-<p>Create object for Matrix of offsets</p>
+<p>The matrix of offsets has same dimensions as count matrix and is stored as an element of assays slot of the InteractionSet object.</p>
+<p>Create object with matrix of offsets</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nb.off &lt;-<span class="st"> </span><span class="kw">assay</span>(zm_data, <span class="st">&quot;offset&quot;</span>)
 <span class="kw">head</span>(nb.off)</code></pre></div>
-<pre><code>##            [,1]      [,2]          [,3]        [,4]
-## [1,] -0.4913710 0.4415066 -0.1288988384  0.17876321
-## [2,] -0.3890223 0.3392252 -0.0821666812  0.13196379
-## [3,] -0.3431208 0.2952738 -0.0625416628  0.11038860
-## [4,] -0.1286706 0.1357166 -0.0009035591 -0.00614246
-## [5,] -0.2798118 0.2380070 -0.0378370881  0.07964195
-## [6,] -0.2577983 0.2197260 -0.0303318216  0.06840410</code></pre>
+<pre><code>##              [,1]      [,2]        [,3]          [,4]
+## [1,] -0.232805996 0.2620612 -0.05675096  0.0274957257
+## [2,] -0.008384201 0.1884264 -0.06019441 -0.1198478186
+## [3,] -0.190152329 0.2487886 -0.05786232 -0.0007739079
+## [4,]  0.278478329 0.1172279 -0.08193442 -0.3137718484
+## [5,]  0.079734145 0.1595868 -0.06153263 -0.1777883368
+## [6,] -0.109757560 0.2230147 -0.05949599 -0.0537611676</code></pre>
 <p>Plot after normalization</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ab &lt;-<span class="st"> </span><span class="kw">aveLogCPM</span>(<span class="kw">asDGEList</span>(zm_data))
 o &lt;-<span class="st"> </span><span class="kw">order</span>(ab)
-adj.counts &lt;-<span class="st"> </span><span class="kw">cpm</span>(<span class="kw">asDGEList</span>(zm_data), <span class="dt">log=</span><span class="ot">TRUE</span>)
+adj.counts &lt;-<span class="st"> </span><span class="kw">cpm</span>(<span class="kw">log2</span>(<span class="kw">assay</span>(zm_data) +<span class="st"> </span><span class="fl">0.5</span>) -<span class="st"> </span>nb.off/<span class="kw">log</span>(<span class="dv">2</span>))
 mval &lt;-<span class="st"> </span>adj.counts[,<span class="dv">3</span>]-adj.counts[,<span class="dv">2</span>]
-<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (1) vs MC (2) afterNLN&quot;</span>)
+<span class="kw">smoothScatter</span>(ab, mval, <span class="dt">xlab=</span><span class="st">&quot;A&quot;</span>, <span class="dt">ylab=</span><span class="st">&quot;M&quot;</span>, <span class="dt">main=</span><span class="st">&quot;En (2) vs MC (1) after NLN&quot;</span>)
 fit &lt;-<span class="st"> </span><span class="kw">loessFit</span>(<span class="dt">x=</span>ab, <span class="dt">y=</span>mval)
 <span class="kw">lines</span>(ab[o], fit$fitted[o], <span class="dt">col=</span><span class="st">&quot;red&quot;</span>)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-20-1.png" /><!-- --></p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-21-1.png" /><!-- --></p>
 <h2 id="modeling-biological-variability">5. MODELING BIOLOGICAL VARIABILITY</h2>
 <p>The NB model also consider extra-Poisson variability between biological replicates of the same conditon.<br />
 Variability is modelled by estimating the dispersion parameter of the NB distribution</p>
@@ -313,12 +262,12 @@ y</code></pre></div>
 <pre><code>## An object of class &quot;DGEList&quot;
 ## $counts
 ##   Sample1 Sample2 Sample3 Sample4
-## 1      48      75      61      91
-## 2      29      44      54      48
-## 3      16      44      43      39
-## 4      12      12      17      19
-## 5      16      32      27      33
-## 52908 more rows ...
+## 1     238     309     383     511
+## 2     149     125     179     187
+## 3     219     388     290     356
+## 4      58      39      61      55
+## 5     117     119     122     117
+## 28353 more rows ...
 ## 
 ## $samples
 ##         group lib.size norm.factors
@@ -329,125 +278,125 @@ y</code></pre></div>
 ## 
 ## $offset
 ##          [,1]     [,2]     [,3]     [,4]
-## [1,] 12.80406 13.73693 13.16653 13.47419
-## [2,] 12.90640 13.63465 13.21326 13.42739
-## [3,] 12.95231 13.59070 13.23288 13.40581
-## [4,] 13.16676 13.43114 13.29452 13.28928
-## [5,] 13.01561 13.53343 13.25759 13.37507
-## 52908 more rows ...</code></pre>
+## [1,] 13.06262 13.55749 13.23868 13.32292
+## [2,] 13.28704 13.48385 13.23523 13.17558
+## [3,] 13.10527 13.54421 13.23756 13.29465
+## [4,] 13.57390 13.41265 13.21349 12.98165
+## [5,] 13.37516 13.45501 13.23389 13.11764
+## 28353 more rows ...</code></pre>
 <p>Estimate NB dispersion</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y &lt;-<span class="st"> </span><span class="kw">estimateDisp</span>(y, design)
 y$common.dispersion</code></pre></div>
-<pre><code>## [1] 0.03858963</code></pre>
+<pre><code>## [1] 0.02241369</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plotBCV</span>(y)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-22-1.png" /><!-- --></p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
 <p>Estimate QL dispersion<br />
-Estimation of QL dispersion is performed to model variability of the dispersions.<br />
-<strong>Note:</strong> robust=TRUE protect EB shrinkage against positive outliers (highly variable counts).</p>
+Estimation of QL dispersion is performed to model variability of the dispersions. <strong>Note:</strong> robust=TRUE protect EB shrinkage against positive outliers (highly variable counts).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(statmod)
 fit &lt;-<span class="st"> </span><span class="kw">glmQLFit</span>(y, design, <span class="dt">robust=</span><span class="ot">TRUE</span>)
 <span class="kw">plotQLDisp</span>(fit)
 <span class="kw">summary</span>(fit$df.prior)</code></pre></div>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-##   1.428  16.779  16.779  16.779  16.779  16.779</code></pre>
+##  0.3139 94.8057 94.8057 93.8711 94.8057 94.8057</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plotQLDisp</span>(fit)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-23-1.png" /><!-- --></p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-24-1.png" /><!-- --></p>
 <h2 id="testing-for-significant-interactions">6. TESTING FOR SIGNIFICANT INTERACTIONS</h2>
 <p>QL F-test</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">result &lt;-<span class="st"> </span><span class="kw">glmQLFTest</span>(fit, <span class="dt">coef=</span><span class="dv">2</span>)
 <span class="kw">topTags</span>(result)</code></pre></div>
 <pre><code>## Coefficient:  MC 
-##           logFC   logCPM        F       PValue        FDR
-## 30051 -2.360129 6.877610 46.52626 1.747771e-06 0.02758004
-## 34718 -2.476954 6.375154 46.49172 1.756640e-06 0.02758004
-## 46741 -2.708376 7.355397 45.67129 1.982645e-06 0.02758004
-## 26579 -2.038484 8.219364 44.96066 2.204602e-06 0.02758004
-## 43575 -1.918634 8.309786 41.99890 3.477439e-06 0.02758004
-## 30050 -2.285957 6.503117 40.51552 4.407083e-06 0.02758004
-## 19999 -2.085247 7.805370 40.13877 4.684964e-06 0.02758004
-## 9866  -2.665358 7.312811 39.70436 5.029709e-06 0.02758004
-## 29584 -2.654877 7.707343 39.61271 5.105982e-06 0.02758004
-## 43640 -2.055887 7.719528 39.48740 5.212338e-06 0.02758004</code></pre>
+##            logFC    logCPM        F       PValue          FDR
+## 13346 -1.1231542 10.680540 40.05655 7.685422e-09 0.0001291583
+## 9865  -1.1290963 10.190604 39.58786 9.109124e-09 0.0001291583
+## 19439 -1.0759957 10.492930 36.64549 2.686483e-08 0.0002539443
+## 7984  -1.7116681  6.387260 34.67566 5.622975e-08 0.0003986408
+## 6493   1.9548499  5.787290 31.51096 2.013291e-07 0.0011418579
+## 7997  -0.9821595 10.745390 30.43788 2.873087e-07 0.0013579166
+## 16246 -1.9021883  5.909386 28.86006 5.355809e-07 0.0020249001
+## 6268   2.0172868  5.567084 28.69803 5.712392e-07 0.0020249001
+## 4749  -0.9134636  9.951511 26.16918 1.581572e-06 0.0049833576
+## 14507 -1.5570337  6.166139 25.48952 2.088012e-06 0.0057935872</code></pre>
 <p>Save significance statistics in rowData of InteractionSet object</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rowData</span>(zm_data) &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">rowData</span>(zm_data), result$table)</code></pre></div>
 <p>Plot to visualize</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">de &lt;-<span class="st"> </span><span class="kw">decideTestsDGE</span>(result, <span class="dt">p.value=</span><span class="fl">0.05</span>, <span class="dt">adjust.method=</span><span class="st">&quot;BH&quot;</span>)
 debins &lt;-<span class="st"> </span><span class="kw">rownames</span>(result)[<span class="kw">as.logical</span>(de)]
 <span class="kw">plotSmear</span>(result, <span class="dt">de.tags=</span>debins)</code></pre></div>
-<p><img src="07_diffhic_files/figure-html/unnamed-chunk-26-1.png" /><!-- --></p>
-<p>Clustering based on significant bin pairs</p>
+<p><img src="07_diffhic_files/figure-html/unnamed-chunk-27-1.png" /><!-- --></p>
+<h3 id="clustering-based-on-significant-bin-pairs">Clustering based on significant bin pairs</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clustered.sig &lt;-<span class="st"> </span><span class="kw">diClusters</span>(zm_data, result$table, <span class="dt">target=</span><span class="fl">0.05</span>, <span class="dt">cluster.args=</span><span class="kw">list</span>(<span class="dt">tol=</span><span class="dv">1</span>))
 <span class="kw">length</span>(clustered.sig$interactions)</code></pre></div>
-<pre><code>## [1] 8</code></pre>
+<pre><code>## [1] 36</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(clustered.sig$interactions)</code></pre></div>
 <pre><code>## ReverseStrictGInteractions object with 6 interactions and 0 metadata columns:
 ##                   seqnames1         ranges1                 seqnames2
 ##                       &lt;Rle&gt;       &lt;IRanges&gt;                     &lt;Rle&gt;
-##   [1] 2:120000001-132000000 2549906-2559945 --- 2:120000001-132000000
-##   [2] 2:120000001-132000000 4810045-4820002 --- 2:120000001-132000000
-##   [3] 2:120000001-132000000 6259771-6269648 --- 2:120000001-132000000
-##   [4] 2:120000001-132000000 6880275-6889819 --- 2:120000001-132000000
-##   [5] 2:120000001-132000000 6980126-6989663 --- 2:120000001-132000000
-##   [6] 2:120000001-132000000 8020044-8029946 --- 2:120000001-132000000
+##   [1] 2:120000001-132000000         1-50246 --- 2:120000001-132000000
+##   [2] 2:120000001-132000000   249863-300231 --- 2:120000001-132000000
+##   [3] 2:120000001-132000000 1549705-1599984 --- 2:120000001-132000000
+##   [4] 2:120000001-132000000 2749835-2799978 --- 2:120000001-132000000
+##   [5] 2:120000001-132000000 2900413-2949355 --- 2:120000001-132000000
+##   [6] 2:120000001-132000000 4800039-4850036 --- 2:120000001-132000000
 ##               ranges2
 ##             &lt;IRanges&gt;
-##   [1] 2549906-2559945
-##   [2] 4810045-4820002
-##   [3] 6259771-6269648
-##   [4] 6880275-6889819
-##   [5] 6970404-6989663
-##   [6] 8020044-8029946
+##   [1]         1-50246
+##   [2]         1-50246
+##   [3] 1450000-1500065
+##   [4]   199996-249862
+##   [5] 2900413-2949355
+##   [6] 4800039-4850036
 ##   -------
-##   regions: 9 ranges and 0 metadata columns
+##   regions: 41 ranges and 0 metadata columns
 ##   seqinfo: 1 sequence from an unspecified genome; no seqlengths</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clustered.sig$FDR</code></pre></div>
-<pre><code>## [1] 0</code></pre>
-<p>Create objects for bin pairs identities Combine Test combines p-values</p>
+<pre><code>## [1] 0.02777778</code></pre>
+<p>Create objects for bin pairs identities<br />
+‘combineTest’ combines p-values</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tabcomdata &lt;-<span class="st"> </span><span class="kw">combineTests</span>(clustered.sig$indices[[<span class="dv">1</span>]], result$table)
 <span class="kw">head</span>(tabcomdata)</code></pre></div>
 <pre><code>## DataFrame with 6 rows and 6 columns
-##    nWindows  logFC.up logFC.down               PValue                 FDR
-##   &lt;integer&gt; &lt;integer&gt;  &lt;integer&gt;            &lt;numeric&gt;           &lt;numeric&gt;
-## 1         1         0          1  5.0297091356763e-06 5.2123380629601e-06
-## 2         1         0          1 4.68496405602028e-06 5.2123380629601e-06
-## 3         1         0          1 2.20460166356349e-06 5.2123380629601e-06
-## 4         1         0          1 5.10598234433251e-06 5.2123380629601e-06
-## 5         2         0          2 3.49554212929873e-06 5.2123380629601e-06
-## 6         1         0          1 1.75664035890623e-06 5.2123380629601e-06
+##    nWindows  logFC.up logFC.down               PValue                  FDR
+##   &lt;integer&gt; &lt;integer&gt;  &lt;integer&gt;            &lt;numeric&gt;            &lt;numeric&gt;
+## 1         1         1          0 6.98300823925361e-05 6.98300823925361e-05
+## 2         1         1          0 5.19655380695768e-05 5.85404213192927e-05
+## 3         1         1          0 4.55319410551155e-06 1.09276658532277e-05
+## 4         1         1          0 5.11079907655807e-05 5.85404213192927e-05
+## 5         1         1          0 2.03040674036126e-05 3.17802794143501e-05
+## 6         1         0          1 1.58157197900456e-06 6.32628791601824e-06
 ##     direction
 ##   &lt;character&gt;
-## 1        down
-## 2        down
-## 3        down
-## 4        down
-## 5        down
+## 1          up
+## 2          up
+## 3          up
+## 4          up
+## 5          up
 ## 6        down</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#getBestTest finds bin pair with lowest p-values, to find the strongest change in clusters</span>
 tabbestdata &lt;-<span class="st"> </span><span class="kw">getBestTest</span>(clustered.sig$indices[[<span class="dv">1</span>]], result$table)
 <span class="kw">head</span>(tabbestdata)</code></pre></div>
 <pre><code>## DataFrame with 6 rows and 6 columns
-##        best             logFC           logCPM                F
-##   &lt;integer&gt;         &lt;numeric&gt;        &lt;numeric&gt;        &lt;numeric&gt;
-## 1      9866 -2.66535815179669 7.31281117912775 39.7043622176752
-## 2     19999 -2.08524680381319 7.80536950485475 40.1387699719517
-## 3     26579 -2.03848394291428 8.21936441174658 44.9606582587497
-## 4     29584 -2.65487727057066 7.70734277439999 39.6127054827804
-## 5     30051 -2.36012880009591 6.87761039510477 46.5262612155578
-## 6     34718 -2.47695422935969  6.3751540718002  46.491715911073
+##        best              logFC           logCPM                F
+##   &lt;integer&gt;          &lt;numeric&gt;        &lt;numeric&gt;        &lt;numeric&gt;
+## 1         1  0.755133710812747 9.31224585499152 17.2767111629158
+## 2        16   1.02581706935246 6.68036637000534 18.0278849330954
+## 3       526   1.06287622995692 6.99529897295963 23.6052430478237
+## 4      1545   1.67208692036701 5.43050462963205  17.978084998199
+## 5      1770  0.813585444719294 9.66647056081663 20.1118927392774
+## 6      4749 -0.913463593687237 9.95151138153677 26.1691841649811
 ##                 PValue                  FDR
 ##              &lt;numeric&gt;            &lt;numeric&gt;
-## 1  5.0297091356763e-06 5.83540839352287e-06
-## 2 4.68496405602028e-06 5.83540839352287e-06
-## 3 2.20460166356349e-06 5.83540839352287e-06
-## 4 5.10598234433251e-06 5.83540839352287e-06
-## 5 3.49554212929873e-06 5.83540839352287e-06
-## 6 1.75664035890623e-06 5.83540839352287e-06</code></pre>
+## 1 6.98300823925361e-05 6.98300823925361e-05
+## 2 5.19655380695768e-05 5.85404213192927e-05
+## 3 4.55319410551155e-06 1.09276658532277e-05
+## 4 5.11079907655807e-05 5.85404213192927e-05
+## 5 2.03040674036126e-05 3.17802794143501e-05
+## 6 1.58157197900456e-06 6.32628791601824e-06</code></pre>
 <p>Save statistics</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tabstat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(tabcomdata[,<span class="dv">1</span>:<span class="dv">4</span>], <span class="dt">logFC=</span>tabbestdata$logFC, <span class="dt">FDR=</span>clustered.sig$FDR)
-result.d &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(clustered.sig$interactions)[,,]
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tabstat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(tabcomdata[,<span class="dv">2</span>:<span class="dv">6</span>], <span class="dt">logFC=</span>tabbestdata$logFC, <span class="dt">FDR=</span>clustered.sig$FDR)
+result.d &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(clustered.sig$interactions)[,<span class="kw">c</span>(<span class="st">&quot;seqnames1&quot;</span>,<span class="st">&quot;start1&quot;</span>,<span class="st">&quot;end1&quot;</span>,<span class="st">&quot;seqnames2&quot;</span>,<span class="st">&quot;start2&quot;</span>,<span class="st">&quot;end2&quot;</span>)]
 result.d &lt;-<span class="st"> </span><span class="kw">cbind</span>(result.d, tabstat)
 o.d &lt;-<span class="st"> </span><span class="kw">order</span>(result.d$PValue)
-<span class="kw">write.table</span>(result.d[o.d,], <span class="dt">file=</span><span class="st">&quot;DIclustersData.tsv&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">quote=</span><span class="ot">FALSE</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</code></pre></div>
+<span class="kw">write.table</span>(result.d[o.d,], <span class="dt">file=</span><span class="st">&quot;DIclustersData.txt&quot;</span>, <span class="dt">sep=</span><span class="st">&quot;</span><span class="ch">\t</span><span class="st">&quot;</span>, <span class="dt">quote=</span><span class="ot">FALSE</span>, <span class="dt">row.names=</span><span class="ot">FALSE</span>)</code></pre></div>
         </div>
       </div>
       </article>
