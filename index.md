@@ -33,6 +33,7 @@ Link to exp protocol PDF
 
 1. Introduction to next generation sequencing techniques and HiC data. 
 	* [Lecture](SLIDES/01_HiCWorkshop_Intro_to_NGS.pdf)
+	* [Prerequisites](00-prereq.html)
 2. Quality control of HiC data.
 	* [Lecture](SLIDES/1_mapping_filtering.pdf)
 	* [Practical](01-quality.html)
