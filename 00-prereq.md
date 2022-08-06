@@ -10,13 +10,17 @@ minutes: 5
 For the course you will need to install R and R studio (If your version is a bit old please update it):
 
 To download R:
+
 [https://www.r-project.org/](https://www.r-project.org/)
+
 You need to follow the CRAN download link and choose your favorite server and your operating system (Linux, Mac or Windows). 
 
 To download R Studio:
+
 [https://www.rstudio.com/](https://www.rstudio.com/)
 
 You will also need to install Docker: 
+
 [https://docs.docker.com/install/](https://docs.docker.com/install/)
 
 Choose your system on the left hand side menu and follow the installation instructions. 
